@@ -30,7 +30,14 @@ However, all of this is trivial to edit in game_data.py
 - Any of the 5 clubs  
 * Unlocking all bounties of a specific difficulty  
 * Unlocking gates/teleporter shed doors/pro shop door  
-* Cash items, including a filler 50$ item  
+* Cash items, including a filler 50$ item
+
+## Installation
+- Backup your save files from ```C:\Users\[YOUR USERNAME]\AppData\LocalLow\Luke Muscat\Normal Golf Game```  
+* Install BepInEx 5.4.23.5 from https://github.com/BepInEx/BepInEx/releases  
+* Extract the contents into the game's root folder, default is ```C:\Program Files (x86)\Steam\steamapps\common\Normal Golf Game```  
+* Download the dll from Releases, place into ```BepInEx\plugins```  
+
 
 ### Known issues:  
 - World generation can fail, I suspect it is caused when all of the bounties in the starting region are locked due to none of the starting bounty difficulties lining up.  
