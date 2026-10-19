@@ -32,6 +32,7 @@ Currently the only objective is to complete X amount of bounties. There are plan
 * Bounties are accessed by the sibling index in the !!!Bounties gameobject, this will certainly break if the game gets updated or if other mods mess with the bounty ordering.
 * Starting region numbers in options.py are weird since I was using them for indexing purposes.  
 * The apworld py files are messy and unorganized.  
+* There is no web-world or help files for the apworld, so it fails those two tests
 
 ### Special thanks to:  
 - Luke Muscat for creating a wonderful game.  
