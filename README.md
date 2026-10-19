@@ -1,4 +1,4 @@
-# **There is a risk of your save files being overwritten. Backup your saves before using this mod!**
+# Backup your saves before using this mod! There is a risk of your save files being overwritten.
 > C:\Users\[YOUR USERNAME]\AppData\LocalLow\Luke Muscat\Normal Golf Game
 
 I tried to make it so it loads & saves the files in Normal Golf Game\Archipelago, but there are no guarantees it works.  
