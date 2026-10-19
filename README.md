@@ -37,7 +37,6 @@ Currently the only objective is to complete X amount of bounties. There are plan
 - Luke Muscat for creating a wonderful game.  
 * The Archipelago team for having great resources on learning how to create apworlds, the APQuest documentation was especially useful https://github.com/ItsSeafoamy/Once-Upon-an-Archipelago  
 * alwaysintreble for creating the Unity plugin client template https://github.com/alwaysintreble/ArchipelagoBepInExPluginTemplate  
-* ItsSeafoamy for their Archipelago mod for Once Upon a Katamari, and KitLemonfoot and thearst3rd for their Archipelago mod for Marble it up Ultra.  
-I used these mods for reference on implementing the unity side of things. https://github.com/ItsSeafoamy/Once-Upon-an-Archipelago https://github.com/KitLemonfoot/ArchipelagoMIUU  
+* ItsSeafoamy for their Archipelago mod for Once Upon a Katamari, and KitLemonfoot and thearst3rd for their Archipelago mod for Marble it up Ultra. I used their mods for reference on implementing the unity side of things. https://github.com/ItsSeafoamy/Once-Upon-an-Archipelago https://github.com/KitLemonfoot/ArchipelagoMIUU  
 * Uroogla for their Spyro 3 Archipelago mod, which was a useful reference for creating the apworld https://github.com/Uroogla/S3AP  
 
