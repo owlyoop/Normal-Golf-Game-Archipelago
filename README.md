@@ -21,7 +21,7 @@ Currently the only objective is to complete X amount of bounties. There are plan
 
 Bounties are considered "in logic" if the player has any of the required clubs. For example, most of the bounties are impossible to complete with just a putter. 
 I created a document from my testing of what the 'minimum' required club to complete each bounty. This is based off of the assumption that if a bounty can be completed with a Wedge, it can be completed with an Iron, Hybrid, or Driver.  
-https://docs.google.com/spreadsheets/d/13A9WgVq7vICHySJQw75dY1_jQkMOeksCS9tg1mekR7o/edit?gid=0#gid=0
+https://docs.google.com/spreadsheets/d/13A9WgVq7vICHySJQw75dY1_jQkMOeksCS9tg1mekR7o/edit?usp=sharing
 
 There is alot of subjectivity with this, I did not include clubs if it was unreasonable hard to complete the bounty with, or if it was only possible with a club if the wind was favorable.
 However, all of this is trivial to edit in game_data.py
