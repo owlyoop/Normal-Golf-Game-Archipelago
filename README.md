@@ -11,10 +11,7 @@ There will be many problems. Do not use this expecting to complete the game with
 Currently the only objective is to complete X amount of bounties. There are plans to include LMUGC as a goal in the future. There are barely any features as my goal was to release a functional version before overwhelming myself with numerous options.
 
 The current yaml options:
-Starting region
-Starting club
-Number of starting bounty difficulties
-Number of bounties required to win
+Starting region, Starting club, Number of starting bounty difficulties, Number of bounties required to win
 
 Currently implemented locations:
 All 105 bounties
