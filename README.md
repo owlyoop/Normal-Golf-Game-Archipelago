@@ -13,8 +13,8 @@ Currently the only objective is to complete X amount of bounties. There are plan
 The current yaml options:
 Starting region
 Starting club
-# of starting bounty difficulties
-# of bounties required to win
+Number of starting bounty difficulties
+Number of bounties required to win
 
 Currently implemented locations:
 All 105 bounties
