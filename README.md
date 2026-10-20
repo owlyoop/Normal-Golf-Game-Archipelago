@@ -41,7 +41,6 @@ However, all of this is trivial to edit in game_data.py
 
 ### Known issues:  
 - World generation can fail, I suspect it is caused when all of the bounties in the starting region are locked due to none of the starting bounty difficulties lining up.  
-* Mountaintop region unimplemented.  
 * Bounties don't get locked if they are impossible to complete with the player's currently unlocked clubs.   
 * Bounties are accessed by the sibling index in the !!!Bounties gameobject, this will certainly break if the game gets updated or if other mods mess with the bounty ordering.
 * Starting region numbers in options.py are weird since I was using them for indexing purposes.  
