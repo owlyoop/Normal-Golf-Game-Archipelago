@@ -363,27 +363,27 @@ public class Plugin : BaseUnityPlugin
 		switch (id)
 		{
 			case 2: //putter
-				var putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Putter").GetComponent<SelectableClub>();
+				var putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Putter").GetComponent<SelectableClub>();
 				putter.SetLockedState(true);
 				break;
 
 			case 3: //wedge
-				var wedge = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Wedge").GetComponent<SelectableClub>();
+				var wedge = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Wedge").GetComponent<SelectableClub>();
 				wedge.SetLockedState(true);
 				break;
 
 			case 4: //iron
-				var iron = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/7 Iron").GetComponent<SelectableClub>();
+				var iron = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/7 Iron").GetComponent<SelectableClub>();
 				iron.SetLockedState(true);
 				break;
 
 			case 5: //hybrid
-				var hybrid = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Hybrid").GetComponent<SelectableClub>();
+				var hybrid = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Hybrid").GetComponent<SelectableClub>();
 				hybrid.SetLockedState(true);
 				break;
 
 			case 6: //driver
-				var driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Driver").GetComponent<SelectableClub>();
+				var driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
 				driver.SetLockedState(true);
 				break;
 
