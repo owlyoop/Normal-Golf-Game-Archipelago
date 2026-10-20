@@ -43,6 +43,9 @@ However, all of this is trivial to edit in game_data.py
 - World generation can fail, I suspect it is caused when all of the bounties in the starting region are locked due to none of the starting bounty difficulties lining up.  
 * Bounties don't get locked if they are impossible to complete with the player's currently unlocked clubs.   
 * Bounties are accessed by the sibling index in the !!!Bounties gameobject, this will certainly break if the game gets updated or if other mods mess with the bounty ordering.
+* The Hole 1 bounties logic is not working correctly, they are supposed to require both 'Hole 1' and 'Front Yard' regions.
+* Shop items behind the counter logic isn't working correctly
+* Locked bounties still have arrows pointing at other bounties, this is purely visual and should not be actually locking the bounties
 * Starting region numbers in options.py are weird since I was using them for indexing purposes.  
 * The apworld py files are messy and unorganized.  
 * There is no web-world or help files for the apworld, so it fails those two tests
