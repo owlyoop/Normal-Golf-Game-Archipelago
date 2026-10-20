@@ -158,6 +158,8 @@ namespace NormalGolfArchiProject.Patcher
 			Eye = GameObject.Find("___PLAYER/First Person Character/Eye").GetComponent<InteractChecker>();
 			ChallengeReminder = GameObject.Find("___PLAYER/First Person Character/Eye/Camera/Canvas/CHALLENGEREMINDER").GetComponent<ChallengeReminder>();
 			SaveManager = GameObject.Find("__Managers House/SaveManager").GetComponent<SaveManager>();
+
+			CreateMountaintopGate();
 		}
 
 		public static void LockAllBounties()
@@ -438,5 +440,43 @@ namespace NormalGolfArchiProject.Patcher
 			}
 		}
 
+		static void CreateMountaintopGate()
+		{
+			var gate = GameObject.Find("3D Course/Props/GATES/Hole1Gate");
+			var mtGate = GameObject.Instantiate(gate);
+			mtGate.SetName("MountaintopGate");
+			mtGate.transform.SetParent(GameObject.Find("3D Course/Props/GATES").transform);
+
+			mtGate.transform.position = new Vector3(29.3348f, 18.2192f, -464.4035f);
+			mtGate.transform.localRotation = Quaternion.Euler(0, 60f, 0);
+			mtGate.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+			
+			var p6 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/picketPost (6)");
+			var p7 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/picketPost (7)");
+
+			var g1 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/gate1_LOD0");
+			var g2 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/gate2_LOD0");
+
+			var padlock1 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/padlock2 (1)");
+			var padlock2 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/padlock2");
+			GameObject.Destroy(padlock1);
+			GameObject.Destroy(padlock2);
+
+			p6.transform.position = new Vector3(34.0603f, 18.2868f, -472.2803f);
+			p6.transform.localPosition = new Vector3(6.1228f, 0.0451f, 0.1027f);
+
+			p7.transform.position = new Vector3(29.3127f, 15.4686f, -464.1548f);
+			p7.transform.localPosition = new Vector3(-0.151f, -1.8337f, 0.0701f);
+			p7.transform.localScale = new Vector3(100f, 100f, 200f);
+
+			g1.transform.position = new Vector3(33.8288f, 18.2192f, -472.1873f);
+			g1.transform.localPosition = new Vector3(5.992f, 0f, 0f);
+			g1.transform.localRotation = Quaternion.Euler(270f, 0f, 0f); //y rot 75f open
+
+			g2.transform.position = new Vector3(29.3348f, 18.2192f, -464.4035f);
+			g2.transform.localPosition = new Vector3(0f, 0f, 0f);
+			g2.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); //y rot 285f open
+			g2.transform.localScale = new Vector3(-100f, -100f, -100f);
+		}
 	}
 }

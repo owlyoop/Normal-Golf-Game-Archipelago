@@ -291,20 +291,24 @@ public class Plugin : BaseUnityPlugin
 				shed3.localRotation = Quaternion.Euler(shed3.eulerAngles.x, 134f, shed3.eulerAngles.z);
 				break;
 
-			case 1014:  //mountaintop gate
-				Plugin.BepinLogger.LogWarning("Opening gate to mountaintop (UNIMPLEMENTED)");
+			case 1013:  //mountaintop gate
+				Plugin.BepinLogger.LogInfo("Opening gate for MountainTop <-> holes 6-9");
+				var mtGate1 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/gate1_LOD0").transform;
+				mtGate1.localRotation = Quaternion.Euler(270f, 75f, 0f);
+				var mtGate2 = GameObject.Find("3D Course/Props/GATES/MountaintopGate/gate2_LOD0").transform;
+				mtGate2.localRotation = Quaternion.Euler(90f, 285f, 0f);
 				break;
 
-			case 1015:  //unlock teleporter 1
+			case 1014:  //unlock teleporter 1
 				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #1 panel (UNIMPLEMENTED)");
 				break;
 
-			case 1016:  //unlock teleporter 2
+			case 1015:  //unlock teleporter 2
 				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #2 panel (UNIMPLEMENTED)");
 				break;
 
 			default:
-				Plugin.BepinLogger.LogError("Received invalid ID in ReceiveRegionUnlockItem: " + id);
+				Plugin.BepinLogger.LogWarning("Received invalid ID in ReceiveRegionUnlockItem: " + id);
 				break;
 		}
 	}
