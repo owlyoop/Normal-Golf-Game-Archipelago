@@ -11,14 +11,14 @@ Currently the only objective is to complete X amount of bounties. There are plan
 
 ### The current yaml options:  
 - Starting region  
-* Starting club  
-* Number of starting bounty difficulties  
-* Number of bounties required to win
+- Starting club  
+- Number of starting bounty difficulties  
+- Number of bounties required to win
 
 ### Currently implemented locations:  
 - All 105 bounties
-* Purchasing shop items
-* Stray cash lying around
+- Purchasing shop items
+- Stray cash lying around
 
 Bounties are considered "in logic" if the player has any of the required clubs. For example, most of the bounties are impossible to complete with just a putter. 
 I created a document from my testing of what the 'minimum' required club to complete each bounty. This is based off of the assumption that if a bounty can be completed with a Wedge, it can be completed with an Iron, Hybrid, or Driver.  
@@ -29,15 +29,25 @@ However, all of this is trivial to edit in game_data.py
 
 ### Currently implemented items:  
 - Any of the 5 clubs  
-* Unlocking all bounties of a specific difficulty  
-* Unlocking gates/teleporter shed doors/pro shop door  
-* Cash items, including a filler 50$ item
+- Unlocking all bounties of a specific difficulty  
+- Unlocking gates/teleporter shed doors/pro shop door  
+
+### Currently implemented filler items:
+- Filler 50$
+- Music pitch down
+- Music pitch up
+
+### Currently implemented trap items:
+- Temporary low friction for green or fairway surfaces
+- Temporary extra bounciness for green or fairway surfaces
+- Temporary Turbo boost fairway
+- Evil kookaburra
 
 ## Installation
 - Backup your save files from ```C:\Users\[YOUR USERNAME]\AppData\LocalLow\Luke Muscat\Normal Golf Game```  
-* Install BepInEx 5.4.23.5 from https://github.com/BepInEx/BepInEx/releases  
-* Extract the contents into the game's root folder, default is ```C:\Program Files (x86)\Steam\steamapps\common\Normal Golf Game```  
-* Download the dll from Releases, place into ```BepInEx\plugins```  
+- Install BepInEx 5.4.23.5 from https://github.com/BepInEx/BepInEx/releases  
+- Extract the contents into the game's root folder, default is ```C:\Program Files (x86)\Steam\steamapps\common\Normal Golf Game```  
+- Download the dll from Releases, place into ```BepInEx\plugins```  
 
 
 ### Known issues:  
