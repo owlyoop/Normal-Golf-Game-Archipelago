@@ -8,6 +8,8 @@ from .regions import Regions
 ID_OFFSET_ITEM_DIFFICULTY_UNLOCK = 600
 ID_OFFSET_ITEM_REGION_UNLOCK = 1000
 ID_OFFSET_ITEM_CASH = 2000
+ID_OFFSET_ITEM_FILLER = 3000
+ID_OFFSET_ITEM_TRAP = 4000
 ID_OFFSET_LOCATION_SHOP = 50000
 ID_OFFSET_LOCATION_STRAY_CASH = 60000
 
@@ -60,6 +62,10 @@ class ShopItem(TypedDict):
     cost: int
     region: str
 
+class StrayCashItem(TypedDict):
+    id: int
+    region: str
+
 
 TOTAL_COST_OF_ALL_SHOP = 12100
 TOTAL_COST_OF_SHOP_CLUBS = 3450
@@ -91,19 +97,20 @@ shop_data: dict[str, ShopItem] = {
     "Pro Shop Buy Hole Skip #5" : {"id": ID_OFFSET_LOCATION_SHOP + 20, "cost":700, "region": Regions.ProShop}
 }
 
-stray_cash_data: dict[str, str] = {
-    "Stray Cash (pro shop shelf)" : Regions.ProShop,
-    "Stray Cash (cash register)": Regions.ProShop,
-    "Stray Cash (boxes behind register)": Regions.ProShop_Upstairs,
-    "Stray Cash (practice putt)": Regions.Hole_1_Area,
-    "Stray Cash (hole 3 picnic table)": Regions.Holes_2_to_5,
-    "Stray Cash (hole 4 no swimming sign)": Regions.Holes_2_to_5,
-    "Stray Cash (tunnel rocks #1)": Regions.Holes_2_to_5,
-    "Stray Cash (tunnel rocks #2)": Regions.Holes_2_to_5,
-    "Stray Cash (driveway picket fence)": Regions.Holes_6_to_9,
-    "Stray Cash (mountainside bunker door)": Regions.Mountaintop,
-    "Stray Cash (Hole 6 rocks #1)": Regions.Holes_6_to_9,
-    "Stray Cash (Hole 6 rocks #2)": Regions.Holes_6_to_9,
+#todo: driveway picket fence cash can be collected from either holes6-9 or holes2-5
+stray_cash_data: dict[str, StrayCashItem] = {
+    "Stray Cash (pro shop shelf)" : {"id" : ID_OFFSET_LOCATION_STRAY_CASH, "region": Regions.ProShop},
+    "Stray Cash (cash register)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 1, "region":Regions.ProShop},
+    "Stray Cash (boxes behind register)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 2, "region": Regions.ProShop_Upstairs},
+    "Stray Cash (practice putt)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 3, "region":Regions.Hole_1_Area},
+    "Stray Cash (hole 3 picnic table)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 4, "region": Regions.Holes_2_to_5},
+    "Stray Cash (hole 4 no swimming sign)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 5, "region": Regions.Holes_2_to_5},
+    "Stray Cash (tunnel rocks #1)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 6, "region": Regions.Holes_2_to_5} ,
+    "Stray Cash (tunnel rocks #2)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 7, "region": Regions.Holes_2_to_5},
+    "Stray Cash (driveway picket fence)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 8, "region":Regions.Holes_6_to_9 },
+    "Stray Cash (mountainside bunker door)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 9, "region":Regions.Mountaintop},
+    "Stray Cash (Hole 6 rocks #1)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 10, "region":Regions.Holes_6_to_9},
+    "Stray Cash (Hole 6 rocks #2)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 11, "region":Regions.Holes_6_to_9},
 }
 
 #ID is XXYYY, where XX is the parent ID and YYY is the index among its siblings

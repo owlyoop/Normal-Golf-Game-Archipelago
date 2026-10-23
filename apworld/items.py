@@ -6,7 +6,7 @@ from BaseClasses import Item, ItemClassification
 from enum import IntEnum
 
 from .game_data import bounty_data, shop_data, DIFFICULTY_CASH, Difficulty, ID_OFFSET_ITEM_REGION_UNLOCK, \
-    ID_OFFSET_ITEM_CASH, ID_OFFSET_ITEM_DIFFICULTY_UNLOCK
+    ID_OFFSET_ITEM_CASH, ID_OFFSET_ITEM_DIFFICULTY_UNLOCK, ID_OFFSET_ITEM_FILLER, ID_OFFSET_ITEM_TRAP
 
 if TYPE_CHECKING:
     from .world import APNormalGolfWorld
@@ -43,7 +43,6 @@ ITEM_NAME_TO_ID: dict[str, int] = {
     "Iron": 4,
     "Hybrid": 5,
     "Driver": 6,
-    "Filler $50": 100
 }
 
 #todo make it so im not copypasting the strs for the region connections. somehow. idk
@@ -82,33 +81,22 @@ cash_items: dict[str, int] = {
     "$600" : 600,
     "$800" : 800,
     "$1000" : 1000
-    #"$10000" : 10000
 }
 
+#id 3000
 filler_items: list[str] = [
-    "No Wobble 90 seconds",
-    "No Wind 90 seconds",
     "Filler $50",
-    "1% Faster Player Movement Speed",
-    "Red Green",
-    "Change Golf Ball Skin",
     "Music Pitch Down",
     "Music Pitch Up"
 ]
 
+#id 4000
 trap_items: list[str] = [
-    "Erratic Wind Trap",
-    "Extreme Wind Speed Trap",
     "Icy Green Trap",
+    "Icy Fairway Trap",
+    "Bouncy Green Trap",
     "Bouncy Fairway Trap",
     "Accelerated Fairway Trap",
-    "Egg Trap",
-    "Fog Trap",
-    "Invisible Power Bar"
-    "Erratic Stance Trap",
-    "Fail Bounty Trap",
-    "Extra Wobble Trap",
-    "Annoying Bird Sounds",
     "Evil Kookaburra"
 ]
 
@@ -121,6 +109,16 @@ difficulty_unlock_id = 0
 for difficulty in Difficulty:
     ITEM_NAME_TO_ID["Unlock " + difficulty.name + " bounties"] = ID_OFFSET_ITEM_DIFFICULTY_UNLOCK + difficulty_unlock_id
     difficulty_unlock_id += 1
+
+filler_id = 0
+for filler in filler_items:
+    ITEM_NAME_TO_ID[filler] = filler_id + ID_OFFSET_ITEM_FILLER
+    filler_id += 1
+
+trap_id = 0
+for trap in trap_items:
+    ITEM_NAME_TO_ID[trap] = trap_id + ID_OFFSET_ITEM_TRAP
+    trap_id += 1
 
 
 def create_all_items(world: APNormalGolfWorld) -> None:
@@ -171,5 +169,5 @@ def get_random_filler_item_name(world: APNormalGolfWorld) -> str:
     # IMPORTANT: Whenever you need to use a random generator, you must use world.random.
     # This ensures that generating with the same generator seed twice yields the same output.
     # DO NOT use a bare random object from Python's built-in random module.
-    return world.random.choice(["Filler $50"])
+    return world.random.choice(filler_items + trap_items)
 

@@ -47,6 +47,7 @@ public class Plugin : BaseUnityPlugin
 		Harmony.CreateAndPatchAll(typeof(IngamePatcher));
 		Harmony.CreateAndPatchAll(typeof(SaveManager_WriteSave_Prefix));
 		Harmony.CreateAndPatchAll(typeof(SaveManager_LoadStoryRun_Prefix));
+		Harmony.CreateAndPatchAll(typeof(BallPhysicsPatcher));
 		if (ArchipelagoClient.Authenticated && ArchipelagoClient.session != null)
 		{
 			
@@ -61,7 +62,11 @@ public class Plugin : BaseUnityPlugin
 	{
 		while (ItemQueue.TryDequeue(out int num))
 		{
-			if (num >= 2000)
+			if (num >= 4000)
+				ReceiveTrapItem(num);
+			else if (num >= 3000)
+				ReceiveFillerItem(num);
+			else if (num >= 2000)
 				ReceiveCashItem(num);
 			else if (num >= 1000)
 				ReceiveRegionUnlockItem(num);
@@ -71,6 +76,8 @@ public class Plugin : BaseUnityPlugin
 				ReceiveMiscItem(num);
 		}
 	}
+
+
 
 	private void OnDestroy()
 	{
@@ -386,9 +393,55 @@ public class Plugin : BaseUnityPlugin
 				var driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
 				driver.SetLockedState(true);
 				break;
+		}
+	}
 
-			case 100:   //TODO: move this filler item
+	public static void ReceiveFillerItem(int id)
+	{
+		if (SceneManager.GetActiveScene().name != "Main") return;
+		switch (id)
+		{
+			case 3000:	//filler $50
 				ProgressManager.instance.m_bank.ChangeBalance(50, halfSound: true, fast: true);
+				break;
+
+			case 3001:  //music pitch down
+				SavedGameLoader.SetMusicPitchLow();
+				break;
+
+			case 3002:  //music pitch up
+				SavedGameLoader.SetMusicPitchHigh();
+				break;
+		}
+	}
+
+	private void ReceiveTrapItem(int id)
+	{
+		if (SceneManager.GetActiveScene().name != "Main") return;
+		switch (id)
+		{
+			case 4000: //icy green
+				BallPhysicsTraps.ActivateIcyGreen(60f);
+				break;
+
+			case 4001: //icy fairway
+				BallPhysicsTraps.ActivateIcyFairway(60f);
+				break;
+
+			case 4002: //bouncy fairway
+				BallPhysicsTraps.ActivateBouncyGreen(60f);
+				break;
+
+			case 4003: //bouncy fairway
+				BallPhysicsTraps.ActivateBouncyFairway(60f);
+				break;
+
+			case 4004: //accelerated fairway
+				BallPhysicsTraps.ActivateAcceleratedFairwayTrap(60f);
+				break;
+
+			case 4005: //evil kookaburra
+				SavedGameLoader.MakeKookaburraEvil();
 				break;
 		}
 	}

@@ -20,21 +20,6 @@ namespace NormalGolfArchiProject.Patcher
 {
 	public class IngamePatcher
 	{
-
-		//somehow call debugsaveskip.loaddebugsave even tho i dunno if debugsaveskip exists yet in the main menu
-		//SaveManager.instance.m_runSavePath
-		//disable 3d course/tees/greenteelong
-
-		/* Init
-		 * remove clubs from player
-		 * set all bounties to locked
-		 * set all gates to locked
-		 * teleport player to starting zone
-		 * unlock starting locations
-		 * 
-		 */
-
-		//todo: find mainmenu
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(MainMenu), "Start")]
 		private static void MainMenu_Start_PostFix(MainMenu __instance)
@@ -88,7 +73,6 @@ namespace NormalGolfArchiProject.Patcher
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
 				var session = Plugin.ArchipelagoClient.session;
-				//todo: move this so this only happens once on initial connect
 				long[] ids = new[] { (long)__instance.m_interaction };
 				int id = (int)ids[0];
 				if (!SavedGameLoader.FPSInteractableCachedItems.ContainsKey(id))
@@ -97,9 +81,23 @@ namespace NormalGolfArchiProject.Patcher
 					SavedGameLoader.FPSInteractableCachedItems[id] = scouts[(long)__instance.m_interaction].ItemName;
 				}
 
-				ie.m_useText.text.text = "Buy " + SavedGameLoader.FPSInteractableCachedItems[(int)__instance.m_interaction];
+				ie.m_useText.text.text = "Buy: " + SavedGameLoader.FPSInteractableCachedItems[(int)__instance.m_interaction];
 
 				ie.m_costAnim.SetText(Loc.GetString("Price") + ": <color=#00FF00><wave>$" + __instance.m_cashValue.ToString("N0") + "</wave></color>");
+			}
+			else if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction <= (InteractionType)60012)
+			{
+				var ie = SavedGameLoader.Eye;
+				ie.m_usePrompt.SetActive(true);
+				var session = Plugin.ArchipelagoClient.session;
+				long[] ids = new[] { (long)__instance.m_interaction };
+				int id = (int)ids[0];
+				if (!SavedGameLoader.strayCashFPSInteractables.ContainsKey(id))
+				{
+					Dictionary<long, ScoutedItemInfo> scouts = session.Locations.ScoutLocationsAsync(false, ids).Result;
+					SavedGameLoader.strayCashFPSInteractables[id] = scouts[(long)__instance.m_interaction].ItemName;
+				}
+				ie.m_useText.text.text = "Collect: " + SavedGameLoader.strayCashFPSInteractables[(int)__instance.m_interaction];
 			}
 		}
 
@@ -177,6 +175,15 @@ namespace NormalGolfArchiProject.Patcher
 					ProgressManager.instance.m_bank.ChangeBalance(-__instance.m_cashValue, halfSound: true, fast: true);
 					boughtCheck = true;
 				}
+			}
+
+			//stray cash
+			if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction <= (InteractionType)60012)
+			{
+				Plugin.BepinLogger.LogInfo("Interacted with stray cash item: " + __instance.m_interaction.ToString());
+				Plugin.ArchipelagoClient.SendCheck((int)__instance.m_interaction);
+				__instance.gameObject.SetActive(false);
+				__instance.transform.parent.gameObject.SetActive(false);
 			}
 
 			if (!boughtCheck) return;

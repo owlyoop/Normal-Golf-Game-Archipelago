@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -27,22 +28,35 @@ namespace NormalGolfArchiProject.Patcher
 		private static bool startsWedge = StartingClub == 1;
 		private static bool startsPutter = StartingClub == 0;
 
-		static List<FPSInteractable> shopItems = new List<FPSInteractable>();
-		private static int shopInteractEnum = 50000;
-
+		private static int shopInteractEnum = 50000; //Archipelago ID offset for shop locations
+		private static int strayCashInteractEnum = 60000; //Archipelago ID offset for stray cash locations
 		public static bool hasOpenedClubPanel = false;
 
+		public static int BountyGoal = 105;
 
-		public static Dictionary<int, string> FPSInteractableCachedItems = new Dictionary<int, string>();
 
+		#region References
+		static List<FPSInteractable> shopItems = new List<FPSInteractable>(); //im not using this afaik
+		public static Dictionary<int, string> FPSInteractableCachedItems = new Dictionary<int, string>(); //Stores
+		public static Dictionary<int, string> strayCashFPSInteractables = new Dictionary<int, string>();
 		public static InteractChecker Eye;
 		public static ChallengeReminder ChallengeReminder;
 		public static SaveManager SaveManager;
-		public static int BountyGoal = 105;
+		public static Ball ball;
+		public static WindPanel wind;
 
-		//public static string SavePath;
+		public static PhysicsMaterial physGreenBase;
+		public static PhysicsMaterial physFairwayBase;
+		
 
-		//TODO: set SaveManager.instance.m_runSavePath to an archipelago folder
+		static AmbienceManager ambience;
+		static AudioSource radio;
+		static AudioSource kookaburra;
+		static AudioSource shopMusic;
+		static float evilKookaburraPitch = 0.4f;
+		static float evilkookaburraVolume = 0.32f;
+		#endregion
+
 		public static void LoadArchipelagoData()
 		{
 			var data = ArchipelagoClient.ServerData.SlotData;
@@ -144,7 +158,10 @@ namespace NormalGolfArchiProject.Patcher
 			CloseAllShedDoors();
 			SetClubs();
 			SetupProShop();
+			SetupAllStrayCash();
 			RemoveCashRewards();
+			PreparePhysicsMaterials();
+			PrepareAudioReferences();
 
 			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
 			{
@@ -158,6 +175,8 @@ namespace NormalGolfArchiProject.Patcher
 			Eye = GameObject.Find("___PLAYER/First Person Character/Eye").GetComponent<InteractChecker>();
 			ChallengeReminder = GameObject.Find("___PLAYER/First Person Character/Eye/Camera/Canvas/CHALLENGEREMINDER").GetComponent<ChallengeReminder>();
 			SaveManager = GameObject.Find("__Managers House/SaveManager").GetComponent<SaveManager>();
+
+			wind = GameObject.Find("PANEL_Wind").GetComponent<WindPanel>();
 
 			CreateMountaintopGate();
 		}
@@ -374,10 +393,7 @@ namespace NormalGolfArchiProject.Patcher
 			//todo: disable 'out of stock' sign things
 			string clubsParent = "3D Course/PRO SHOP/PROPS/CLUBS/";
 
-			//overwrite interaction enum, send locations in harmony postfix???
-			//InteractionType Poop = (InteractionType)1000;
-			//__instance.m_interaction = Poop;
-
+			//dunno if ill need to store the shop items later 
 			var putter = SetupShopItem(clubsParent, "SM_Putter", "/Interact");
 			var wedge = SetupShopItem(clubsParent, "SM_Wedge", "/Interact (2)");
 			var hybrid = SetupShopItem(clubsParent, "SM_Hybrid", "/Interact (2)");
@@ -395,7 +411,7 @@ namespace NormalGolfArchiProject.Patcher
 
 
 			string ticketSuffix = "/Trigger";
-
+			
 			var ticketMull = SetupShopItem(ticketsParent, "mulliganTicket", ticketSuffix);
 			var ticketMull1 = SetupShopItem(ticketsParent, "mulliganTicket (1)", ticketSuffix);
 			var ticketMull2 = SetupShopItem(ticketsParent, "mulliganTicket (2)", ticketSuffix);
@@ -415,6 +431,13 @@ namespace NormalGolfArchiProject.Patcher
 			var ticketWind3 = SetupShopItem(ticketsParent, "nowindTicket (3)", ticketSuffix);
 		}
 
+		/// <summary>
+		/// Helper function for SetupProShop
+		/// </summary>
+		/// <param name="goParent"></param>
+		/// <param name="goItem"></param>
+		/// <param name="goTrigger"></param>
+		/// <returns></returns>
 		static FPSInteractable SetupShopItem(string goParent, string goItem, string goTrigger)
 		{
 			var item = GameObject.Find(goParent + goItem + goTrigger).GetComponent<FPSInteractable>();
@@ -426,11 +449,86 @@ namespace NormalGolfArchiProject.Patcher
 			return item;
 		}
 
-		public static void SetupStrayCash()
+		public static void SetupAllStrayCash()
 		{
+			//3D Course / CASH / NAME / Mesh / Trigger name.FpsInteractable
 
+
+
+			/*
+			 * all paths are like: 3D Course / CASH / 100(1) / Mesh / Trigger
+			 * 
+			 * except for 50 which is: 3D Course/CASH/50/Mesh/TriggerIgnoreWalls
+			 * and 100 (7) which is: 3D Course/CASH/100 (7)/Mesh/IgnoreWalls
+			 * 
+			//name	sibling index	location
+			50			0			pro shop shelf
+			full path: 3D Course/CASH/50/Mesh/TriggerIgnoreWalls
+
+			100			1			pro shop cash register
+			100			2			pro shop boxes (behind counter)
+			100 (1)		3			practice putt (hole1)
+			100 (2)		4			hole 3 picnic table
+			100 (3)		5			hole 4 no swimming sign
+			100 (4)		6			tunnel rocks 1
+			100 (5)		7			tunnel rocks 2
+			100 (6)		8			inside greenscreen building
+
+			100 (7)		9			driveway picket fence (can be collected from holes 6-9 and holes 2-5)
+			3D Course/CASH/100 (7)/Mesh/IgnoreWalls
+
+			100 (8)		10			mountainside bunker door
+			100 (9)		11			hole 6 rocks 1
+			100 (10)	12			hole 6 rocks 2
+			upstairs???
+
+			lake teleporter shed cash in completely different location
+			3D Course/Buildings/miniShed (1)/100 (5)/Mesh/IgnoreWalls
+
+			todo: if i ever add that greenscreen building as a location, thats what cash 100 (6) is.
+			*/
+
+
+			string cashParent = "3D Course/CASH/";
+			string suffix = "/Mesh/Trigger"; //the suffix of the path for all cash except 50, 100 (7), and the teleport shed cash
+
+			var dupeCash = GameObject.Find(cashParent + "100"); //two of the cash items have the same exact name and im using Gameobject.Find like a criminal
+			dupeCash.SetName("100_dupe");
+
+
+			var cash0 = SetupStrayCash(cashParent, "50", "/Mesh/TriggerIgnoreWalls");
+			var cash1 = SetupStrayCash(cashParent, "100", suffix);
+			var cash2 = SetupStrayCash(cashParent, "100_dupe", suffix);
+			var cash3 = SetupStrayCash(cashParent, "100 (1)", suffix);
+			var cash4 = SetupStrayCash(cashParent, "100 (2)", suffix);
+			var cash5 = SetupStrayCash(cashParent, "100 (3)", suffix);
+			var cash6 = SetupStrayCash(cashParent, "100 (4)", suffix);
+			var cash7 = SetupStrayCash(cashParent, "100 (5)", suffix);
+			var cash8 = SetupStrayCash(cashParent, "100 (7)", "/Mesh/IgnoreWalls");
+			var cash9 = SetupStrayCash(cashParent, "100 (8)", suffix);
+			var cash10 = SetupStrayCash(cashParent, "100 (9)", suffix);
+			var cash11 = SetupStrayCash(cashParent, "100 (10)", suffix); //this one doesnt work for whatever reason
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="goParent">String of the path that precedes the cash item name</param>
+		/// <param name="goCash"></param>
+		/// <param name="goFPS"></param>
+		/// <returns></returns>
+		static FPSInteractable SetupStrayCash(string goParent, string goCash, string goFPS)
+		{
+			var cash = GameObject.Find(goParent + goCash + goFPS).GetComponent<FPSInteractable>();
+			cash.gameObject.SetActive(true);
+			cash.m_interaction = (InteractionType)strayCashInteractEnum;
+			strayCashInteractEnum++;
+			return cash;
+		}
+
+		/// <summary>
+		/// Remove the cash rewards completing a bounty gives you
+		/// </summary>
 		static void RemoveCashRewards()
 		{
 			var manager = GameObject.Find("!!!Bountys").GetComponent<BountyBalancer>();
@@ -438,6 +536,7 @@ namespace NormalGolfArchiProject.Patcher
 			{
 				difficulty.reward = 0;
 			}
+			//todo: remove cash reward text from bountypads?
 		}
 
 		static void CreateMountaintopGate()
@@ -478,5 +577,55 @@ namespace NormalGolfArchiProject.Patcher
 			g2.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); //y rot 285f open
 			g2.transform.localScale = new Vector3(-100f, -100f, -100f);
 		}
+
+		static void PreparePhysicsMaterials()
+		{
+			ball = GameObject.Find("/Ball").GetComponent<Ball>();
+			Plugin.BepinLogger.LogInfo(ball.name);
+			physGreenBase = new PhysicsMaterial();
+			physGreenBase = ball.m_physics[2];
+			physFairwayBase = new PhysicsMaterial();
+			physFairwayBase = ball.m_physics[1];
+			BallPhysicsTraps.InitializePhysicsMaterials();
+			
+		}
+
+		static void PrepareAudioReferences()
+		{
+			ambience = GameObject.Find("__Managers House/Audio Manager/AmbienceManager").GetComponent<AmbienceManager>();
+			var sounds = ambience.gameObject.GetComponents<AudioSource>();
+
+			foreach(var sound in sounds)
+			{
+				if(sound.clip.name == "kooky")
+				{
+					kookaburra = sound;
+				}
+			}
+
+			radio = GameObject.Find("__Managers House/Audio Manager/RadioController").GetComponent<AudioSource>();
+			shopMusic = GameObject.Find("__Managers House/Audio Manager/MUSICAREA").GetComponent<MusicArea>().m_music;
+		}
+
+		public static void SetMusicPitchLow()
+		{
+			radio.pitch = 0.64f;
+			shopMusic.pitch = 0.6f;
+		}
+
+		public static void SetMusicPitchHigh()
+		{
+			radio.pitch = 1.64f;
+			shopMusic.pitch = 2f;
+		}
+
+		public static void MakeKookaburraEvil()
+		{
+			kookaburra.pitch = 0.4f;
+			kookaburra.volume = 0.28f;
+		}
+
+		
+
 	}
 }
