@@ -49,6 +49,7 @@ However, all of this is trivial to edit in game_data.py
 * Starting region numbers in options.py are weird since I was using them for indexing purposes.  
 * The apworld py files are messy and unorganized.  
 * There is no web-world or help files for the apworld, so it fails those two tests
+* One of the cash items on the white picketfence can be collected either holes 6-9 or holes 2-5 area, but it is only set as holes 6-9 in the apworld
 
 ### Special thanks to:  
 - Luke Muscat for creating a wonderful game.  
