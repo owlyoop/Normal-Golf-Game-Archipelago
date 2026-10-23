@@ -18,6 +18,7 @@ Currently the only objective is to complete X amount of bounties. There are plan
 ### Currently implemented locations:  
 - All 105 bounties
 * Purchasing shop items
+* Stray cash lying around
 
 Bounties are considered "in logic" if the player has any of the required clubs. For example, most of the bounties are impossible to complete with just a putter. 
 I created a document from my testing of what the 'minimum' required club to complete each bounty. This is based off of the assumption that if a bounty can be completed with a Wedge, it can be completed with an Iron, Hybrid, or Driver.  
