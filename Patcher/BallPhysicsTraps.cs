@@ -46,8 +46,8 @@ namespace NormalGolfArchiProject.Patcher
 		public static PhysicsMaterial bouncyGreen;
 		public static PhysicsMaterial bouncyFairway;
 
-		public static float icyGreenFriction = 0.1f;
-		public static float icyFairwayFriction = 0.1f;
+		public static float icyGreenFriction = 0.032f;
+		public static float icyFairwayFriction = 0.064f;
 		public static float bouncyFairwayBounciness = 0.95f;
 		public static float bouncyGreenBounciness = 0.85f;
 

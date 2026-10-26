@@ -85,7 +85,7 @@ namespace NormalGolfArchiProject.Patcher
 
 				ie.m_costAnim.SetText(Loc.GetString("Price") + ": <color=#00FF00><wave>$" + __instance.m_cashValue.ToString("N0") + "</wave></color>");
 			}
-			else if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction <= (InteractionType)60012)
+			else if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction < (InteractionType)69999)
 			{
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
@@ -178,9 +178,9 @@ namespace NormalGolfArchiProject.Patcher
 			}
 
 			//stray cash
-			if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction <= (InteractionType)60012)
+			if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction <= (InteractionType)69999)
 			{
-				Plugin.BepinLogger.LogInfo("Interacted with stray cash item: " + __instance.m_interaction.ToString());
+				Plugin.BepinLogger.LogInfo("Interacted with item: " + __instance.m_interaction.ToString());
 				Plugin.ArchipelagoClient.SendCheck((int)__instance.m_interaction);
 				__instance.gameObject.SetActive(false);
 				__instance.transform.parent.gameObject.SetActive(false);
@@ -194,16 +194,48 @@ namespace NormalGolfArchiProject.Patcher
 
 		}
 
-		/*[HarmonyPostfix]
-		[HarmonyPatch(typeof(SelectClub), nameof(SelectClub.Start))]
-		private static void SelectClub_Start_Postfix(SelectClub __instance)
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(Breakable), nameof(Breakable.OnCollisionEnter))]
+		private static void Breakable_OnCollisionEnter_Postfix(Breakable __instance, UnityEngine.Collision __0)
 		{
-			if (!SavedGameLoader.hasOpenedClubPanel)
+			if (__0.gameObject.layer == LayerMask.NameToLayer("Ball"))
 			{
-				__instance.SelectNextClub(true);
-				SavedGameLoader.hasOpenedClubPanel = true;
+				//programming is my passion
+				if (__instance.transform.parent.name == "plyboard")
+					Plugin.ArchipelagoClient.SendCheck(71000);
+				else if (__instance.transform.parent.name == "plyboard (2)")
+					Plugin.ArchipelagoClient.SendCheck(71001);
+				else if (__instance.transform.parent.name == "plyboard (5)")
+					Plugin.ArchipelagoClient.SendCheck(71002);
+				else if (__instance.name == "MU1a")
+					Plugin.ArchipelagoClient.SendCheck(71003);
+				else if (__instance.name == "MU1b")
+					Plugin.ArchipelagoClient.SendCheck(71004);
+				else if (__instance.name == "MU2a")
+					Plugin.ArchipelagoClient.SendCheck(71005);
+				else if (__instance.name == "MU2b")
+					Plugin.ArchipelagoClient.SendCheck(71006);
+				else if (__instance.name == "1")
+					Plugin.ArchipelagoClient.SendCheck(71007);
+				else if (__instance.name == "2")
+					Plugin.ArchipelagoClient.SendCheck(71008);
+				else if (__instance.transform.parent.name == "plyboard_cashroom")
+					Plugin.ArchipelagoClient.SendCheck(71009);
+
 			}
-		}*/
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(BallTarget), nameof(BallTarget.OnTriggerEnter))]
+		private static void BallTarget_OnTriggerEnter_Postfix(BallTarget __instance, Collider __0)
+		{
+			if (__0.gameObject.layer == LayerMask.NameToLayer("Ball"))
+			{
+				Plugin.BepinLogger.LogInfo("golfball in " + __instance.id);
+				var id = GameData.BallTargetIDs[__instance.id];
+				Plugin.ArchipelagoClient.SendCheck(id);
+			}
+		}
 
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(MainManager), nameof(MainManager.Start))]
@@ -226,6 +258,13 @@ namespace NormalGolfArchiProject.Patcher
 			__instance.m_text.text = "Completed " + count + "/" + SavedGameLoader.BountyGoal + " Bounties";
 			__instance.ShowBalanceReminder(true);
 			__instance.UpdateBalanceReminder();
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(Bank), nameof(Bank.ChangeBalance))]
+		private static void Bank_ChangeBalance_Postfix(Bank __instance)
+		{
+			SavedGameLoader.ChallengeReminder.SetString("test"); //challengereminder postfix will set it correctly
 		}
 	}
 

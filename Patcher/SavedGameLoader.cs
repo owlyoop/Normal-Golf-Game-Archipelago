@@ -30,6 +30,7 @@ namespace NormalGolfArchiProject.Patcher
 
 		private static int shopInteractEnum = 50000; //Archipelago ID offset for shop locations
 		private static int strayCashInteractEnum = 60000; //Archipelago ID offset for stray cash locations
+		private static int upstairsCashInteractEnum = 61000;
 		public static bool hasOpenedClubPanel = false;
 
 		public static int BountyGoal = 105;
@@ -159,6 +160,7 @@ namespace NormalGolfArchiProject.Patcher
 			SetClubs();
 			SetupProShop();
 			SetupAllStrayCash();
+			SetupBreakables();
 			RemoveCashRewards();
 			PreparePhysicsMaterials();
 			PrepareAudioReferences();
@@ -343,6 +345,29 @@ namespace NormalGolfArchiProject.Patcher
 			var counter = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/BarDoor").transform;
 			counter.localRotation = Quaternion.Euler(-90f, counter.eulerAngles.y, counter.eulerAngles.z);
 
+			//lukes office
+			var office = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/LockRoom").transform;
+			office.localRotation = Quaternion.Euler(270f, 0f, 0f);
+
+			//greenscreen building
+			var greenDoor = GameObject.Find("3D Course/Buildings/marketingdpt2/SM_SlidingDoor");
+			greenDoor.SetActive(true);
+			GameObject.Find("3D Course/Buildings/marketingdpt2/PROPS").SetActive(true);
+			//3D Course/Buildings/marketingdpt2/PROPS/server/Interact (1)
+
+			//cash room
+			var cashDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/CashRoom").transform;
+			cashDoor.localRotation = Quaternion.Euler(270f, 180f, 0f);
+
+			//padlock room
+			var lockDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/MysteryRoom").transform;
+			lockDoor.localRotation = Quaternion.Euler(270f, 90f, 0f);
+
+			//simulator room
+			var simDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/OfficeDoorPADLOCKED").transform;
+			simDoor.localRotation = Quaternion.Euler(270f, 0f, 0f);
+
+
 		}
 
 		public static void SetClubs()
@@ -496,34 +521,123 @@ namespace NormalGolfArchiProject.Patcher
 			dupeCash.SetName("100_dupe");
 
 
-			var cash0 = SetupStrayCash(cashParent, "50", "/Mesh/TriggerIgnoreWalls");
-			var cash1 = SetupStrayCash(cashParent, "100", suffix);
-			var cash2 = SetupStrayCash(cashParent, "100_dupe", suffix);
-			var cash3 = SetupStrayCash(cashParent, "100 (1)", suffix);
-			var cash4 = SetupStrayCash(cashParent, "100 (2)", suffix);
-			var cash5 = SetupStrayCash(cashParent, "100 (3)", suffix);
-			var cash6 = SetupStrayCash(cashParent, "100 (4)", suffix);
-			var cash7 = SetupStrayCash(cashParent, "100 (5)", suffix);
-			var cash8 = SetupStrayCash(cashParent, "100 (7)", "/Mesh/IgnoreWalls");
-			var cash9 = SetupStrayCash(cashParent, "100 (8)", suffix);
-			var cash10 = SetupStrayCash(cashParent, "100 (9)", suffix);
-			var cash11 = SetupStrayCash(cashParent, "100 (10)", suffix); //this one doesnt work for whatever reason
+			var cash0 = SetupFPSInteractable(cashParent, "50", "/Mesh/TriggerIgnoreWalls");
+			var cash1 = SetupFPSInteractable(cashParent, "100", suffix);
+			var cash2 = SetupFPSInteractable(cashParent, "100_dupe", suffix);
+			var cash3 = SetupFPSInteractable(cashParent, "100 (1)", suffix);
+			var cash4 = SetupFPSInteractable(cashParent, "100 (2)", suffix);
+			var cash5 = SetupFPSInteractable(cashParent, "100 (3)", suffix);
+			var cash6 = SetupFPSInteractable(cashParent, "100 (4)", suffix);
+			var cash7 = SetupFPSInteractable(cashParent, "100 (5)", suffix);
+			var cash8 = SetupFPSInteractable(cashParent, "100 (7)", "/Mesh/IgnoreWalls");
+			var cash9 = SetupFPSInteractable(cashParent, "100 (8)", suffix);
+			var cash10 = SetupFPSInteractable(cashParent, "100 (9)", suffix);
+			var cash11 = SetupFPSInteractable(cashParent, "100 (10)", suffix);
+			var cash12 = SetupFPSInteractable(cashParent, "100 (6)", suffix);
+			var cash13 = SetupFPSInteractable("3D Course/Buildings/miniShed (1)/", "100 (5)", "/Mesh/IgnoreWalls");
+
+			var ball = SetupFPSInteractable("3D Course/PRO SHOP/PROPS/Static/", "missingBall", "/Trigger");
+			var button = SetupFPSInteractable("3D Course/PRO SHOP/Upstairs/Office/", "bunkerTerminalButtonOnly", "/Interact (1)");
+
+			//upstairs cash
+			string upCashParent = "3D Course/CASH/upstairs/";
+			string upCashSuffix = "/IgnroeWalls"; //ingame is a typo
+			string upCashSuffix2 = "/Mesh/Trigger";
+			var ucash0 = SetupUpstairsCash(upCashParent, "moneyStack", upCashSuffix);
+			var ucash1 = SetupUpstairsCash(upCashParent, "moneyStack (1)", upCashSuffix);
+			var ucash2 = SetupUpstairsCash(upCashParent, "moneyStack (2)", upCashSuffix);
+			var ucash3 = SetupUpstairsCash(upCashParent, "moneyStack (3)", upCashSuffix);
+			var ucash4 = SetupUpstairsCash(upCashParent, "moneyStack (4)", upCashSuffix);
+			var ucash5 = SetupUpstairsCash(upCashParent, "moneyStack (5)", upCashSuffix);
+			var ucash6 = SetupUpstairsCash(upCashParent, "moneyStack (6)", upCashSuffix);
+
+			var ucash_4 = SetupUpstairsCash(upCashParent, "CASH (4)", upCashSuffix2);
+			var ucash_5 = SetupUpstairsCash(upCashParent, "CASH (5)", upCashSuffix2);
+			var ucash_6 = SetupUpstairsCash(upCashParent, "CASH (6)", upCashSuffix2);
+			var ucash_7 = SetupUpstairsCash(upCashParent, "CASH (7)", upCashSuffix2);
+			var ucash_8 = SetupUpstairsCash(upCashParent, "CASH (8)", upCashSuffix2);
+			var ucash_9 = SetupUpstairsCash(upCashParent, "CASH (9)", upCashSuffix2);
+			var ucash_10 = SetupUpstairsCash(upCashParent, "CASH (10)", upCashSuffix2);
+			var ucash_11 = SetupUpstairsCash(upCashParent, "CASH (11)", upCashSuffix2);
+			var ucash_12 = SetupUpstairsCash(upCashParent, "CASH (12)", upCashSuffix2);
+
 		}
 
 		/// <summary>
-		/// 
+		/// Edits the m_interaction enum of the FPSInteractable to align with the archipelago location ID
 		/// </summary>
-		/// <param name="goParent">String of the path that precedes the cash item name</param>
+		/// <param name="goParent">String of the path that precedes the item name. Should end in a slash / </param>
 		/// <param name="goCash"></param>
-		/// <param name="goFPS"></param>
+		/// <param name="goFPS">String of the path after the item name, should begin with a slash / </param>
 		/// <returns></returns>
-		static FPSInteractable SetupStrayCash(string goParent, string goCash, string goFPS)
+		static FPSInteractable SetupFPSInteractable(string goParent, string goCash, string goFPS)
 		{
 			var cash = GameObject.Find(goParent + goCash + goFPS).GetComponent<FPSInteractable>();
+			//Plugin.BepinLogger.LogInfo(cash.name);
 			cash.gameObject.SetActive(true);
 			cash.m_interaction = (InteractionType)strayCashInteractEnum;
 			strayCashInteractEnum++;
 			return cash;
+		}
+
+		static FPSInteractable SetupUpstairsCash(string goParent, string goCash, string goFPS)
+		{
+			var cash = GameObject.Find(goParent + goCash + goFPS).GetComponent<FPSInteractable>();
+			//Plugin.BepinLogger.LogInfo(cash.name);
+			cash.gameObject.SetActive(true);
+			cash.m_interaction = (InteractionType)upstairsCashInteractEnum;
+			upstairsCashInteractEnum++;
+			return cash;
+		}
+
+
+		static void SetupBreakables()
+		{
+			string plyboardParent = "3D Course/Props/Car Park/";
+			string suffix = "/Board";
+
+			var board1 = GameObject.Find(plyboardParent + "plyboard" + suffix);
+			Plugin.BepinLogger.LogInfo(board1.name);
+			board1.SetActive(true);
+
+			var board2 = GameObject.Find(plyboardParent + "plyboard (2)" + suffix);
+			Plugin.BepinLogger.LogInfo(board2.name);
+			board2.SetActive(true);
+
+			var board3 = GameObject.Find(plyboardParent + "plyboard (5)" + suffix);
+			Plugin.BepinLogger.LogInfo(board3.name);
+			board3.SetActive(true);
+
+			string signsParent = "3D Course/Props/Car Park/Signs/";
+
+			var mu1a = GameObject.Find(signsParent + "MeetUp1/MU1a");
+			Plugin.BepinLogger.LogInfo(mu1a.name);
+			mu1a.SetActive(true);
+
+			var mu1b = GameObject.Find(signsParent + "MeetUp1/MU1b");
+			Plugin.BepinLogger.LogInfo(mu1b.name);
+			mu1b.SetActive(true);
+
+			var mu2a = GameObject.Find(signsParent + "MeetUp2/MU2a");
+			Plugin.BepinLogger.LogInfo(mu2a.name);
+			mu2a.SetActive(true);
+
+			var mu2b = GameObject.Find(signsParent + "MeetUp2/MU2b");
+			Plugin.BepinLogger.LogInfo(mu2b.name);
+			mu2b.SetActive(true);
+
+			var con1 = GameObject.Find(signsParent + "Construction/1");
+			Plugin.BepinLogger.LogInfo(con1.name);
+			con1.SetActive(true);
+
+			var con2 = GameObject.Find(signsParent + "Construction/2");
+			Plugin.BepinLogger.LogInfo(con2.name);
+			con2.SetActive(true);
+
+			var board4 = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/plyboard/Board");
+			board4.transform.parent.SetName("plyboard_cashroom");
+			Plugin.BepinLogger.LogInfo(board4.name);
+			board4.SetActive(true);
 		}
 
 		/// <summary>
@@ -587,7 +701,35 @@ namespace NormalGolfArchiProject.Patcher
 			physFairwayBase = new PhysicsMaterial();
 			physFairwayBase = ball.m_physics[1];
 			BallPhysicsTraps.InitializePhysicsMaterials();
-			
+		}
+
+		static void PrepareBreakables()
+		{
+			string plyboardParent = "3D Course/PROPS/Car Park";
+			var plyboard1 = GameObject.Find(plyboardParent + "/plyboard/Board");
+			plyboard1.SetActive(true);
+
+			var plyboard2 = GameObject.Find(plyboardParent + "/plyboard (2)/Board");
+			plyboard2.SetActive(true);
+
+			var plyboard3 = GameObject.Find(plyboardParent + "/plyboard (5)/Board");
+			plyboard3.SetActive(true);
+
+			string signsParent = "3D Course/Props/Car Park/Signs";
+			var meetup1a = GameObject.Find(signsParent + "/MeetUp1/MU1a");
+			var meetup1b = GameObject.Find(signsParent + "/MeetUp1/MU1b");
+			meetup1a.SetActive(true);
+			meetup1b.SetActive(true);
+
+			var meetup2a = GameObject.Find(signsParent + "/MeetUp2/MU2a");
+			var meetup2b = GameObject.Find(signsParent + "/MeetUp2/MU2b");
+			meetup2a.SetActive(true);
+			meetup2b.SetActive(true);
+
+			var construction1 = GameObject.Find(signsParent + "/Construction/1");
+			var construction2 = GameObject.Find(signsParent + "/Construction/2");
+			construction1.SetActive(true);
+			construction2.SetActive(true);
 		}
 
 		static void PrepareAudioReferences()

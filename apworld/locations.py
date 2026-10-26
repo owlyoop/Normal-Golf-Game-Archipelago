@@ -9,7 +9,8 @@ from .items import BOUNTY_COMPLETE
 if TYPE_CHECKING:
     from .world import APNormalGolfWorld
 
-from .game_data import bounty_data, shop_data, stray_cash_data, ID_OFFSET_LOCATION_STRAY_CASH
+from .game_data import bounty_data, shop_data, stray_cash_data, ID_OFFSET_LOCATION_STRAY_CASH, golfhole_data, \
+    breakable_signs_data, upstairs_cash_data
 
 
 # Every location must have a unique integer ID associated with it.
@@ -22,7 +23,7 @@ class APNormalGolfLocation(Location):
     game = "Normal Golf Game"
 
 LOCATION_NAME_TO_ID = {}
-for table in (bounty_data, shop_data, stray_cash_data):
+for table in (bounty_data, shop_data, stray_cash_data, breakable_signs_data, upstairs_cash_data, golfhole_data):
    for location_id, data in table.items():
        LOCATION_NAME_TO_ID[location_id] = data["id"]
 
@@ -32,6 +33,9 @@ def create_all_locations(world: APNormalGolfWorld) -> None:
     create_bounty_locations(world)
     create_shop_locations(world)
     create_stray_cash_locations(world)
+    create_upstairs_cash_locations(world)
+    create_breakable_sign_locations(world)
+    create_golfhole_locations(world)
 
 def bounty_complete_event_name(bounty_name: str) -> str:
     return f"{bounty_name} (Complete)"
@@ -62,7 +66,23 @@ def create_stray_cash_locations(world: APNormalGolfWorld) -> None:
         location = APNormalGolfLocation(world.player, name, cash["id"], region)
         region.locations.append(location)
 
+def create_upstairs_cash_locations(world: APNormalGolfWorld) -> None:
+    for name, ucash in upstairs_cash_data.items():
+        region = world.get_region(ucash["region"])
+        location = APNormalGolfLocation(world.player, name, ucash["id"], region)
+        region.locations.append(location)
 
+def create_breakable_sign_locations(world: APNormalGolfWorld) -> None:
+    for name, sign in breakable_signs_data.items():
+        region = world.get_region(world.origin_region_name)
+        location = APNormalGolfLocation(world.player, name, sign["id"], region)
+        region.locations.append(location)
+
+def create_golfhole_locations(world: APNormalGolfWorld) -> None:
+    for name, golfhole in golfhole_data.items():
+        region = world.get_region(golfhole["region"])
+        location = APNormalGolfLocation(world.player, name, golfhole["id"], region)
+        region.locations.append(location)
 
 #def create_events(world: APNormalGolfWorld) -> None:
 

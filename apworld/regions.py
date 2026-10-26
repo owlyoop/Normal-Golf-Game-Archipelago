@@ -18,6 +18,11 @@ class Regions:
     Holes_6_to_9 = "Holes 6-9"
     LakeArea = "Lake Area"
     Mountaintop = "Mountaintop"
+    Lukes_Office = "Luke's Office"
+    ProShop_Upstairs_CashRoom = "Upstairs Cash Room"
+    ProShop_Upstairs_SimulatorRoom = "Upstairs Simulator Room"
+    ProShop_Upstairs_LockRoom = "Upstairs Padlock Room"
+    Green_Screen_Building = "Green Screen Building"
 
 
 # A region is a container for locations ("checks"), which connects to other regions via "Entrance" objects.
@@ -57,12 +62,19 @@ def create_all_regions(world: APNormalGolfWorld) -> None:
 
     teleporter_3a_shed = Region("Teleporter #3A Shed", world.player, world.multiworld)
 
+    lukes_office = Region(Regions.Lukes_Office, world.player, world.multiworld)
+    cash_room = Region(Regions.ProShop_Upstairs_CashRoom, world.player, world.multiworld)
+    simulator_room = Region(Regions.ProShop_Upstairs_SimulatorRoom, world.player, world.multiworld)
+    lock_room = Region(Regions.ProShop_Upstairs_LockRoom, world.player, world.multiworld)
+    greenscreen_bldg = Region(Regions.Green_Screen_Building, world.player, world.multiworld)
+
     # Let's put all these regions in a list.
     regions = [car_park, front_yard, pro_shop, pro_shop_upstairs, hole_1_area, holes_2_to_5, holes_6_to_9,
                teleporter_1b_bathroom, teleporter_1a_shed,
                teleporter_2b_shed, teleporter_2a_shed,
                teleporter_3a_shed, lake_area,
-               mountaintop]
+               mountaintop,
+               lukes_office, cash_room, simulator_room, lock_room, greenscreen_bldg]
 
     # Some regions may only exist if the player enables certain options.
 
@@ -94,6 +106,12 @@ def connect_regions(world: APNormalGolfWorld) -> None:
     lake_area = world.get_region("Lake Area")
 
     mountaintop = world.get_region("Mountaintop")
+
+    lukes_office = world.get_region(Regions.Lukes_Office)
+    cash_room = world.get_region(Regions.ProShop_Upstairs_CashRoom)
+    lock_room = world.get_region(Regions.ProShop_Upstairs_LockRoom)
+    simulator_room = world.get_region(Regions.ProShop_Upstairs_SimulatorRoom)
+    greenscreen_building = world.get_region(Regions.Green_Screen_Building)
 
     #car park connections
     car_park.connect(front_yard, "Car Park to Front Yard",
@@ -189,6 +207,32 @@ def connect_regions(world: APNormalGolfWorld) -> None:
                                lambda state: state.has("Unlock Teleporter #3 Shed", world.player))
     lake_area.connect(teleporter_3a_shed, "Lake Area to Teleporter #3 Shed",
                                lambda state: state.has("Unlock Teleporter #3 Shed", world.player))
+
+    holes_6_to_9.connect(greenscreen_building, "Holes 6-9 to Green Screen Building",
+                         lambda state: state.has("Unlock Green Screen Building", world.player))
+    greenscreen_building.connect(holes_6_to_9, "Green Screen Building to Holes 6-9",
+                         lambda state: state.has("Unlock Green Screen Building", world.player))
+
+    #Pro Shop Updatris connections
+    pro_shop_upstairs.connect(lukes_office, "Upstairs to Luke's Office",
+                              lambda state: state.has("Unlock Luke's Office Door", world.player))
+    lukes_office.connect(pro_shop_upstairs, "Luke's Office to Upstairs",
+                              lambda state: state.has("Unlock Luke's Office Door", world.player))
+
+    pro_shop_upstairs.connect(cash_room, "Upstairs to Cash Room",
+                              lambda state: state.has("Unlock Cash Room Door", world.player))
+    cash_room.connect(pro_shop_upstairs, "Cash Room to Upstairs",
+                              lambda state: state.has("Unlock Cash Room Door", world.player))
+
+    pro_shop_upstairs.connect(lock_room, "Upstairs to Padlock Room",
+                              lambda state: state.has("Unlock Padlock Room Door", world.player))
+    lock_room.connect(pro_shop_upstairs, "Padlock Room to Upstairs",
+                              lambda state: state.has("Unlock Padlock Room Door", world.player))
+
+    pro_shop_upstairs.connect(simulator_room, "Upstairs to Simulator Room",
+                              lambda state: state.has("Unlock Simulator Room Door", world.player))
+    simulator_room.connect(pro_shop_upstairs, "Simulator Room to Upstairs",
+                              lambda state: state.has("Unlock Simulator Room Door", world.player))
 
     # todo: look into how one-way connections are made. player can fall from mountaintop to holes 2-5 or 6-9
     mountaintop_oneway_holes_2_5 = Entrance(world.player, "Mountaintop drop-down to Holes 2-5", parent=mountaintop)

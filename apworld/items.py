@@ -11,6 +11,7 @@ from .game_data import bounty_data, shop_data, DIFFICULTY_CASH, Difficulty, ID_O
 if TYPE_CHECKING:
     from .world import APNormalGolfWorld
 
+
 class APNormalGolfItem(Item):
     game = "Normal Golf Game"
 
@@ -43,6 +44,7 @@ ITEM_NAME_TO_ID: dict[str, int] = {
     "Iron": 4,
     "Hybrid": 5,
     "Driver": 6,
+    "Practice Panel": 7,
 }
 
 #todo make it so im not copypasting the strs for the region connections. somehow. idk
@@ -62,7 +64,12 @@ region_unlocks: list[str] = [
     "Unlock Teleporter #3 Shed",
     "Unlock Gate to Mountaintop",
     "Unlock Teleporter #1",
-    "Unlock Teleporter #2"]
+    "Unlock Teleporter #2",
+    "Unlock Green Screen Building",
+    "Unlock Luke's Office Door",
+    "Unlock Cash Room Door",
+    "Unlock Padlock Room Door",
+    "Unlock Simulator Room Door"]
 
 unlock_id = 0
 for unlock in region_unlocks:
@@ -121,6 +128,7 @@ for trap in trap_items:
     trap_id += 1
 
 
+
 def create_all_items(world: APNormalGolfWorld) -> None:
     itempool: list[Item] = []
 
@@ -145,7 +153,10 @@ def create_all_items(world: APNormalGolfWorld) -> None:
             itempool.append(world.create_item(cash_item))
 
     for diff in Difficulty:
+        if diff in world.starting_difficulties:
+            continue
         itempool.append(world.create_item("Unlock " + diff.name + " bounties"))
+
 
     number_of_items = len(itempool)
     number_of_unfilled_locations = len(world.multiworld.get_unfilled_locations(world.player))

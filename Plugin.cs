@@ -314,6 +314,31 @@ public class Plugin : BaseUnityPlugin
 				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #2 panel (UNIMPLEMENTED)");
 				break;
 
+			case 1016: //green screen building
+				var greenDoor = GameObject.Find("3D Course/Buildings/marketingdpt2/SM_SlidingDoor");
+				greenDoor.SetActive(false);
+				break;
+
+			case 1017: //luke's office
+				var office = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/LockRoom").transform;
+				office.localRotation = Quaternion.Euler(270f, 194f, 0f);
+				break;
+
+			case 1018: //cash room
+				var cashDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/CashRoom").transform;
+				cashDoor.localRotation = Quaternion.Euler(270f, 300f, 0f);
+				break;
+
+			case 1019: //padlock room
+				var lockDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/MysteryRoom").transform;
+				lockDoor.localRotation = Quaternion.Euler(270f, 190f, 0f);
+				break;
+
+			case 1020: //simulator room
+				var simDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/OfficeDoorPADLOCKED").transform;
+				simDoor.localRotation = Quaternion.Euler(270f, 120f, 0f);
+				break;
+
 			default:
 				Plugin.BepinLogger.LogWarning("Received invalid ID in ReceiveRegionUnlockItem: " + id);
 				break;
@@ -392,6 +417,9 @@ public class Plugin : BaseUnityPlugin
 			case 6: //driver
 				var driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
 				driver.SetLockedState(true);
+				break;
+
+			case 7: //todo: practice panel
 				break;
 		}
 	}

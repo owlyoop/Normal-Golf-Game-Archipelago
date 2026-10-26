@@ -12,6 +12,8 @@ ID_OFFSET_ITEM_FILLER = 3000
 ID_OFFSET_ITEM_TRAP = 4000
 ID_OFFSET_LOCATION_SHOP = 50000
 ID_OFFSET_LOCATION_STRAY_CASH = 60000
+ID_OFFSET_LOCATION_GOLFHOLE = 70000
+ID_OFFSET_LOCATION_BREAKABLE = 71000
 
 class GolfClubs(IntEnum):
     Putter = 1
@@ -32,7 +34,6 @@ class Difficulty(IntEnum):
     DIABOLICAL = 8
     IMPOSSIBLE = 9
 
-
 DIFFICULTY_CASH: dict[Difficulty, int] = {
     Difficulty.SUPER_EASY: 75,
     Difficulty.EASY: 100,
@@ -43,6 +44,55 @@ DIFFICULTY_CASH: dict[Difficulty, int] = {
     Difficulty.NIGHTMARE: 400,
     Difficulty.DIABOLICAL: 600,
     Difficulty.IMPOSSIBLE: 800,
+}
+
+#region : Club , list of difficulties
+#i hope this is helpful in making sure random starting region/club/difficulties wont cause world generation errors
+REGIONS_CLUBS_DIFFICULTIES: dict[str, dict[int, list[int]]] = {
+    Regions.CarPark : {1 : [],
+                       2 : [],
+                       3 : [3, 5],
+                       4 : [3, 5],
+                       5 : [3, 5]},
+
+    Regions.FrontYard : {0 : [1],
+                         1: [1, 2, 3, 4, 7],
+                         2: [1, 2, 3, 4, 5, 7],
+                         3: [1, 2, 3, 4, 5, 7],
+                         4: [1, 2, 3, 4, 5, 7],
+                         5: [1, 2, 3, 4, 5, 7],},
+
+    Regions.Hole_1_Area : {1 : [3, 4],
+                           2 : [3, 4, 5, 8],
+                           3 : [3, 4, 5, 8, 9],
+                           4 : [3, 4, 5, 8, 9],
+                           5 : [3, 4, 5, 8, 9],},
+
+
+    Regions.Holes_2_to_5 : {1 : [1, 4, 5],
+                            2 : [1, 3, 4, 5, 6, 7, 8, 9],
+                            3 : [1, 3, 4, 5, 6, 7, 8, 9],
+                            4 : [1, 3, 4, 5, 6, 7, 8, 9],
+                            5 : [1, 3, 4, 5, 6, 7, 8, 9]},
+
+    Regions.Holes_6_to_9 : {1 : [2, 4, 5],
+                            2 : [1, 2, 3, 4, 5, 6, 7, 9],
+                            3 : [1, 2, 3, 4, 5, 6, 7, 9],
+                            4 : [1, 2, 3, 4, 5, 6, 7, 9],
+                            5 : [1, 2, 3, 4, 5, 6, 7, 9]},
+
+    Regions.LakeArea : {1: [6],
+                        2: [6, 8],
+                        3: [3, 6, 8],
+                        4: [3, 6, 8],
+                        5: [3, 6, 8]},
+
+    Regions.Mountaintop : { 1: [2],
+                            2: [2, 5],
+                            3: [2, 5],
+                            4: [2, 5, 7],
+                            5: [2, 5, 7]},
+
 }
 
 
@@ -65,6 +115,17 @@ class ShopItem(TypedDict):
 class StrayCashItem(TypedDict):
     id: int
     region: str
+
+class GolfHole(TypedDict):
+    id: int
+    region: str
+
+#the dict[int, list[str]] is:
+#key: club
+#value: list of regions that it is reasonable to hit the breakable with
+class Breakable(TypedDict):
+    id: int
+    region_club_dict: dict[int, list[str]]
 
 
 TOTAL_COST_OF_ALL_SHOP = 12100
@@ -111,7 +172,195 @@ stray_cash_data: dict[str, StrayCashItem] = {
     "Stray Cash (mountainside bunker door)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 9, "region":Regions.Mountaintop},
     "Stray Cash (Hole 6 rocks #1)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 10, "region":Regions.Holes_6_to_9},
     "Stray Cash (Hole 6 rocks #2)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 11, "region":Regions.Holes_6_to_9},
+    "Stray Cash (green screen building)" : {"id": ID_OFFSET_LOCATION_STRAY_CASH + 12, "region": Regions.Green_Screen_Building},
+    "Stray Cash (Teleporter Shed #3)" : {"id": ID_OFFSET_LOCATION_STRAY_CASH + 13, "region": "Teleporter #3A Shed"},
+    "Lost Golf Ball" : {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 14, "region": Regions.ProShop_Upstairs},
+    "Unlock Bunker Button": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 15, "region": Regions.Lukes_Office},
 }
+
+upstairs_cash_data: dict[str, StrayCashItem] = {
+    "Stray Cash (Cash Room #1)" : {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 1000,
+                                   "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #2)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1001,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #3)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1002,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #4)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1003,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #5)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1004,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #6)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1005,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #7)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1006,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #8)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1007,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #9)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1008,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #10)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1009,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #11)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1010,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #12)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1011,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #13)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1012,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #14)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1013,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #15)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1014,
+                                  "region": Regions.ProShop_Upstairs_CashRoom},
+    "Stray Cash (Cash Room #16)": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 1015,
+                                   "region": Regions.ProShop_Upstairs_CashRoom},
+
+}
+
+#for holesanity where every golfhole is a location
+golfhole_data: dict[str, GolfHole] = {
+    "Hole #1 hole" : {"id" : ID_OFFSET_LOCATION_GOLFHOLE, "region":Regions.Hole_1_Area},
+    "Hole #2 hole" : {"id" : ID_OFFSET_LOCATION_GOLFHOLE + 1, "region":Regions.Holes_2_to_5},
+    "Hole #3 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 2, "region": Regions.Holes_2_to_5},
+    "Hole #4 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 3, "region": Regions.Holes_2_to_5},
+    "Hole #5 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 4, "region": Regions.Holes_2_to_5},
+    "Hole #6 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 5, "region": Regions.Holes_6_to_9},
+    "Hole #7 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 6, "region": Regions.Holes_6_to_9},
+    "Hole #8 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 7, "region": Regions.Holes_6_to_9},
+    "Hole #9 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 8, "region": Regions.Holes_6_to_9},
+    #todo: equally difficult to do miniIsland1 from hole1 or holes 2-5, but the bounty is in frontyard
+    "Mini Island Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 9, "region": Regions.FrontYard},
+    "Mini Island Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 10, "region": Regions.Holes_2_to_5},
+    "Mini Island Hole #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 11, "region": Regions.Holes_6_to_9},
+    "Big Bunker Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 12, "region": Regions.Holes_2_to_5},
+    "Practice Green Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 13, "region": Regions.Hole_1_Area},
+    "Practice Green Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 14, "region": Regions.Hole_1_Area},
+    "Practice Green Hole #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 15, "region": Regions.Hole_1_Area},
+    "Practice Green Hole #4": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 16, "region": Regions.Hole_1_Area},
+    "Practice Green Hole #5": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 17, "region": Regions.Hole_1_Area},
+    "Practice Green Hole #6": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 18, "region": Regions.Hole_1_Area},
+    "Hole 4 PuttPutt": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 19, "region": Regions.Holes_2_to_5},
+    "Hole 5 PuttPutt Ramp": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 20, "region": Regions.Holes_2_to_5},
+    "Hole 7 PuttPutt": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 21, "region": Regions.Holes_6_to_9},
+    "Hole PuttPutt Dish" : {"id": ID_OFFSET_LOCATION_GOLFHOLE + 22, "region" : Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #1" : {"id": ID_OFFSET_LOCATION_GOLFHOLE + 23, "region" : Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 24, "region": Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 25, "region": Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #4": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 26, "region": Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #5": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 27, "region": Regions.Holes_2_to_5},
+    "Hole PuttPutt Pool #6": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 28, "region": Regions.Holes_2_to_5},
+    "No Cheese Chip Short Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 29, "region": Regions.Holes_6_to_9},
+    "No Cheese Chip Middle Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 30, "region": Regions.Holes_6_to_9},
+    "No Cheese Chip Tall Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 31, "region": Regions.Holes_6_to_9},
+    "Hole PuttPutt Tilted": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 32, "region": Regions.Holes_6_to_9},
+}
+
+breakable_signs_data: dict[str, Breakable] = {
+    #todo: record what club is needed for each sign from each region.
+    #facing holes2-5. doable with wedge from carpark, frontyard, holes2-5, holes6-9, mountaintop.
+    #might be possible with a wedge from hole1, very hard. definately iron tho.
+    "Car Park Plywood #1": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.FrontYard,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9,
+                              Regions.Mountaintop],
+            GolfClubs.Iron: [Regions.Hole_1_Area]}
+    },
+    #facing house inside holes6-9. doable with wedge from carpark, holes6-9, holes2-5, frontyard. iron hole1.
+    "Car Park Plywood #2": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 1,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.FrontYard,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9,
+                              Regions.Mountaintop],
+            GolfClubs.Iron: [Regions.Hole_1_Area]}
+    },
+    #facing house inside holes2-5. doable with wedge from carpark, holes2-5, holes6-9, frontyard. iron hole1.
+    "Car Park Plywood #3": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 2,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.FrontYard,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9],
+            GolfClubs.Iron: [Regions.Hole_1_Area]}
+    },
+    #front yard, 2-5, 6-9, hole1, mountaintop
+    "Meetup Sign Rooftop #1": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 3,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.FrontYard,
+                              Regions.Hole_1_Area,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9,
+                              Regions.Mountaintop]}
+    },
+    "Meetup Sign Rooftop #2": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 4,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.FrontYard,
+                              Regions.Hole_1_Area,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9,
+                              Regions.Mountaintop]}
+    },
+    #putter mountaintop. wedge carpark, holes2-5, holes6-9. iron frontyard, hole1
+    "Meetup Sign Mountaintop #1": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 5,
+        "region_club_dict": {
+            GolfClubs.Putter: [Regions.Mountaintop],
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9],
+            GolfClubs.Iron: [Regions.FrontYard,
+                             Regions.Hole_1_Area]}
+    },
+    "Meetup Sign Mountaintop #2": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 6,
+        "region_club_dict": {
+            GolfClubs.Putter: [Regions.Mountaintop],
+            GolfClubs.Wedge: [Regions.CarPark,
+                              Regions.Holes_2_to_5,
+                              Regions.Holes_6_to_9],
+            GolfClubs.Iron: [Regions.FrontYard,
+                             Regions.Hole_1_Area]}
+    },
+    #putter hole1. wedge holes6-9. too many trees for the other regions.
+    "Under Construction Sign #1": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 7,
+        "region_club_dict": {
+            GolfClubs.Putter: [Regions.Hole_1_Area],
+            GolfClubs.Wedge: [Regions.Holes_6_to_9]}
+    },
+    "Under Construction Sign #2": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 8,
+        "region_club_dict": {
+            GolfClubs.Putter: [Regions.Hole_1_Area],
+            GolfClubs.Wedge: [Regions.Holes_6_to_9]}
+    },
+
+    "Cash Room Plywood": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE + 9,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.ProShop_Upstairs_CashRoom]}
+    },
+}
+
+
+'''breakable_statue_data: dict[str, Breakable] = {
+    "Statue Block #1" : {"id": ID_OFFSET_LOCATION_BREAKABLE + 9, "region": Regions.Holes_2_to_5},
+    "Statue Block #2": {"id": ID_OFFSET_LOCATION_BREAKABLE + 10, "region": Regions.Holes_2_to_5},
+    "Statue Block #3": {"id": ID_OFFSET_LOCATION_BREAKABLE + 11, "region": Regions.Holes_2_to_5},
+    "Statue Block #4": {"id": ID_OFFSET_LOCATION_BREAKABLE + 12, "region": Regions.Holes_2_to_5},
+    "Statue Block #5": {"id": ID_OFFSET_LOCATION_BREAKABLE + 13, "region": Regions.Holes_2_to_5},
+    "Statue Block #6": {"id": ID_OFFSET_LOCATION_BREAKABLE + 14, "region": Regions.Holes_2_to_5},
+    "Statue Block #7": {"id": ID_OFFSET_LOCATION_BREAKABLE + 15, "region": Regions.Holes_2_to_5},
+    "Statue Block #8": {"id": ID_OFFSET_LOCATION_BREAKABLE + 16, "region": Regions.Holes_2_to_5},
+}'''
 
 #ID is XXYYY, where XX is the parent ID and YYY is the index among its siblings
 #10 if child of "Pads"
@@ -678,21 +927,21 @@ bounty_data: dict[str, GolfBounty] = {
     "Hole 1 - Par": {
         "id": 12001,
         "difficulty": Difficulty.INTERMEDIATE,
-        "region": Regions.Hole_1_Area,
+        "region": Regions.FrontYard,
         "smallest_club_req": GolfClubs.Wedge,   #TODO Different based on if player has hole1 area unlocked
         "game_id": "Hole1Par"
     },
     "Hole 1 - Birdie": {
         "id": 12003,
         "difficulty": Difficulty.VERY_HARD,
-        "region": Regions.Hole_1_Area,
+        "region": Regions.FrontYard,
         "smallest_club_req": GolfClubs.Iron,  #TODO Different based on if player has hole1 area unlocked
         "game_id": "Hole1Birdy"
     },
     "Hole 1 - Par Plus": {
         "id": 12002,
         "difficulty": Difficulty.DIFFICULT,
-        "region": Regions.Hole_1_Area,
+        "region": Regions.FrontYard,
         "smallest_club_req": GolfClubs.Wedge,  #TODO Different based on if player has hole1 area unlocked
         "game_id": "Hole1ParPlus"
     },
