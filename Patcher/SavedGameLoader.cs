@@ -170,6 +170,8 @@ namespace NormalGolfArchiProject.Patcher
 				int id = (int)item.ItemId;
 				if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
 				else if (id >= 600 && id <= 608) Plugin.ReceiveDifficultyUnlockItem(id);
+				else if (id >= 2 && id <= 8) Plugin.ReceiveMiscItem(id);
+				else if (id >= 2000 && id <= 2009) Plugin.ReceiveCashItem(id);
 			}
 
 			//UnlockStartingDifficulties();
@@ -326,6 +328,12 @@ namespace NormalGolfArchiProject.Patcher
 			//hole9 shed
 			var shed9door = GameObject.Find("3D Course/Buildings/miniShed (1)/SM_TinShed_Door").transform;
 			shed9door.localRotation = Quaternion.Euler(shed9door.eulerAngles.x, 0, shed9door.eulerAngles.z);
+
+			GameObject.Find("3D Course/PRO SHOP/PROPS/Teleporter").SetActive(false);
+			GameObject.Find("3D Course/Buildings/Hole5Shed/Teleporter (1)").SetActive(false);
+
+			GameObject.Find("3D Course/Buildings/miniShed/Hole1ShedATeleporter").SetActive(false);
+			GameObject.Find("3D Course/Buildings/Hole3Shed/TeleporterHole3").SetActive(false);
 		}
 
 		public static void CloseAllProShopDoors()

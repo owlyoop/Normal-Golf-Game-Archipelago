@@ -60,7 +60,8 @@ public class Plugin : BaseUnityPlugin
 
 	private void Update()
 	{
-		while (ItemQueue.TryDequeue(out int num))
+		
+		while (ItemQueue.TryDequeue(out int num) && SceneManager.GetActiveScene().name == "Main")
 		{
 			if (num >= 4000)
 				ReceiveTrapItem(num);
@@ -307,11 +308,15 @@ public class Plugin : BaseUnityPlugin
 				break;
 
 			case 1014:  //unlock teleporter 1
-				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #1 panel (UNIMPLEMENTED)");
+				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #1 panels");
+				GameObject.Find("3D Course/PRO SHOP/PROPS/Teleporter").SetActive(true);
+				GameObject.Find("3D Course/Buildings/Hole5Shed/Teleporter (1)").SetActive(true);
 				break;
 
 			case 1015:  //unlock teleporter 2
-				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #2 panel (UNIMPLEMENTED)");
+				Plugin.BepinLogger.LogWarning("Unlocking Teleporter #2 panels");
+				GameObject.Find("3D Course/Buildings/miniShed/Hole1ShedATeleporter").SetActive(true);
+				GameObject.Find("3D Course/Buildings/Hole3Shed/TeleporterHole3").SetActive(true);
 				break;
 
 			case 1016: //green screen building
@@ -420,6 +425,7 @@ public class Plugin : BaseUnityPlugin
 				break;
 
 			case 7: //todo: practice panel
+				GameObject.Find("__Managers House/Progress").GetComponent<ProgressManager>().UnlockPractice(true);
 				break;
 		}
 	}
