@@ -395,7 +395,6 @@ public class Plugin : BaseUnityPlugin
 
 	public static void ReceiveMiscItem(int id)
 	{
-		//todo: make queue thing for items received outside of game ahhhh
 		if (SceneManager.GetActiveScene().name != "Main") return;
 		switch (id)
 		{
@@ -424,7 +423,7 @@ public class Plugin : BaseUnityPlugin
 				driver.SetLockedState(true);
 				break;
 
-			case 7: //todo: practice panel
+			case 7: //practice panel
 				GameObject.Find("__Managers House/Progress").GetComponent<ProgressManager>().UnlockPractice(true);
 				break;
 		}

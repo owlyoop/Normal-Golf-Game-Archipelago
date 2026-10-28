@@ -35,7 +35,6 @@ namespace NormalGolfArchiProject.Patcher
 
 		public static int BountyGoal = 105;
 
-
 		#region References
 		static List<FPSInteractable> shopItems = new List<FPSInteractable>(); //im not using this afaik
 		public static Dictionary<int, string> FPSInteractableCachedItems = new Dictionary<int, string>(); //Stores
@@ -168,9 +167,9 @@ namespace NormalGolfArchiProject.Patcher
 			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
 			{
 				int id = (int)item.ItemId;
-				if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
+				if (id >= 2 && id <= 7) Plugin.ReceiveMiscItem(id);
 				else if (id >= 600 && id <= 608) Plugin.ReceiveDifficultyUnlockItem(id);
-				else if (id >= 2 && id <= 8) Plugin.ReceiveMiscItem(id);
+				else if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
 				else if (id >= 2000 && id <= 2009) Plugin.ReceiveCashItem(id);
 			}
 

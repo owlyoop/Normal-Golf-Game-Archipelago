@@ -266,6 +266,17 @@ namespace NormalGolfArchiProject.Patcher
 		{
 			SavedGameLoader.ChallengeReminder.SetString("test"); //challengereminder postfix will set it correctly
 		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(SelectClub), nameof(SelectClub.Start))]
+		private static void SelectClub_Start_Postfix(SelectClub __instance)
+		{
+			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
+			{
+				int id = (int)item.ItemId;
+				if (id >= 2 && id <= 7) Plugin.ReceiveMiscItem(id);
+			}
+		}
 	}
 
 
