@@ -234,7 +234,6 @@ def connect_regions(world: APNormalGolfWorld) -> None:
     simulator_room.connect(pro_shop_upstairs, "Simulator Room to Upstairs",
                               lambda state: state.has("Unlock Simulator Room Door", world.player))
 
-    # todo: look into how one-way connections are made. player can fall from mountaintop to holes 2-5 or 6-9
     mountaintop_oneway_holes_2_5 = Entrance(world.player, "Mountaintop drop-down to Holes 2-5", parent=mountaintop)
     mountaintop.exits.append(mountaintop_oneway_holes_2_5)
     mountaintop_oneway_holes_2_5.connect(holes_2_to_5)

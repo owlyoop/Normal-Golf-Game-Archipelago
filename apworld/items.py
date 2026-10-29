@@ -47,7 +47,6 @@ ITEM_NAME_TO_ID: dict[str, int] = {
     "Practice Panel": 7,
 }
 
-#todo make it so im not copypasting the strs for the region connections. somehow. idk
 region_unlocks: list[str] = [
     "Unlock Car Park Gate to Front Yard",
     "Unlock Car Park Gate to Holes 2-5",

@@ -225,7 +225,6 @@ golfhole_data: dict[str, GolfHole] = {
     "Hole #7 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 6, "region": Regions.Holes_6_to_9},
     "Hole #8 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 7, "region": Regions.Holes_6_to_9},
     "Hole #9 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 8, "region": Regions.Holes_6_to_9},
-    #todo: equally difficult to do miniIsland1 from hole1 or holes 2-5, but the bounty is in frontyard
     "Mini Island Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 9, "region": Regions.FrontYard},
     "Mini Island Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 10, "region": Regions.Holes_2_to_5},
     "Mini Island Hole #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 11, "region": Regions.Holes_6_to_9},

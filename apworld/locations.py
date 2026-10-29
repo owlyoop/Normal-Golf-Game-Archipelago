@@ -51,9 +51,6 @@ def create_bounty_locations(world: APNormalGolfWorld) -> None:
         #todo: add cash event item here if im not scrambling/randomizing
         region_obj.locations.append(bountycomplete_event);
 
-        #bounty_complete_event = items.APNormalGolfItem(BOUNTY_COMPLETE, ItemClassification.progression, None, world.player)
-        #location.place_locked_item(bounty_complete_event)
-
 def create_shop_locations(world: APNormalGolfWorld) -> None:
     for name, shop in shop_data.items():
         region = world.get_region(shop["region"])
@@ -83,7 +80,3 @@ def create_golfhole_locations(world: APNormalGolfWorld) -> None:
         region = world.get_region(golfhole["region"])
         location = APNormalGolfLocation(world.player, name, golfhole["id"], region)
         region.locations.append(location)
-
-#def create_events(world: APNormalGolfWorld) -> None:
-
-#def get_accessible_cash
