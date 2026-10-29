@@ -105,7 +105,7 @@ namespace NormalGolfArchiProject.Patcher
 		[HarmonyPatch(typeof(InteractChecker), nameof(InteractChecker.CheckForInteractions))]
 		private static void InteractChecker_CheckForInteractions_Postfix(InteractChecker __instance)
 		{
-			//code copied from CheckForInteractions. Sorry if this is illegal
+			//I received permission from Luke Muscat to use this function taken from the original game's code & minorly edited.
 			//couldn't figure out how to keep m_costPrompt active without doing this
 			Collider[] array = Physics.OverlapSphere(__instance.transform.position, 0.09f, __instance._layerMask);
 			foreach (Collider item in array)
@@ -290,6 +290,7 @@ namespace NormalGolfArchiProject.Patcher
 			return false;
 		}
 
+		//I received permission from Luke Muscat to use this function taken from the original game's code & minorly edited.
 		//Taken from the game's original WriteSave function. Identical except it should save in an archipelago folder
 		static IEnumerator Archipelago_WriteSave(SaveManager __instance, string json)
 		{
@@ -327,6 +328,7 @@ namespace NormalGolfArchiProject.Patcher
 			return false;
 		}
 
+		//I received permission from Luke Muscat to use this function taken from the original game's code & minorly edited.
 		static RunSave Archipelago_LoadStoryRun(SaveManager __instance)
 		{
 			if (!File.Exists(Plugin.SavePath) && !File.Exists(Plugin.SavePathBackup))
