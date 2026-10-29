@@ -67,3 +67,5 @@ However, all of this is trivial to edit in game_data.py
 * ItsSeafoamy for their Archipelago mod for Once Upon a Katamari, and KitLemonfoot and thearst3rd for their Archipelago mod for Marble it up Ultra. I used their mods for reference on implementing the unity side of things. https://github.com/ItsSeafoamy/Once-Upon-an-Archipelago https://github.com/KitLemonfoot/ArchipelagoMIUU  
 * Uroogla for their Spyro 3 Archipelago mod, which was a useful reference for creating the apworld https://github.com/Uroogla/S3AP  
 
+AI Disclosure:
+No Generative AI/LLMs were used in creating this project
