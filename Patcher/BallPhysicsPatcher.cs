@@ -24,14 +24,15 @@ namespace NormalGolfArchiProject.Patcher
 		{
 			if (SceneManager.GetActiveScene().name != "Main") return;
 			BallPhysicsTraps.Update();
+			SavedGameLoader.Update();
 		}
 
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(Ball), nameof(Ball.OnCollisionStay))]
 		private static void Ball_OnCollisionStay_PostFix(Ball __instance)
 		{
+			if (__instance == null) return;
 			if (!BallPhysicsTraps.IsAcceleratedFairway) return;
-
 			if (__instance.m_currentShotData.m_lastTouchedSurface.Substring(0, 4) == "Fair")
 			{
 				__instance.m_rb.linearVelocity += (__instance.m_rb.linearVelocity.normalized * 0.32f);

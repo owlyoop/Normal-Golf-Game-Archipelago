@@ -30,7 +30,7 @@ class StartingClub(Choice):
     option_hybrid = 3
     option_driver = 4
 
-    default = option_hybrid
+    default = option_iron
 
 class StartingRegion(Choice):
     """The region the player has access to at the start of the game"""

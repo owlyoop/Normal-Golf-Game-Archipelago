@@ -48,14 +48,12 @@ public class Plugin : BaseUnityPlugin
 		Harmony.CreateAndPatchAll(typeof(SaveManager_WriteSave_Prefix));
 		Harmony.CreateAndPatchAll(typeof(SaveManager_LoadStoryRun_Prefix));
 		Harmony.CreateAndPatchAll(typeof(BallPhysicsPatcher));
-		if (ArchipelagoClient.Authenticated && ArchipelagoClient.session != null)
-		{
-			
-		}
+		Harmony.CreateAndPatchAll(typeof(DialogueManagerPatcher));
 
-		SavePath = Application.persistentDataPath + "/" + "Archipelago/run2.txt";
-		SavePathBackup = Application.persistentDataPath + "/" + "Archipelago/run2_temp.txt";
-		Directory.CreateDirectory(Application.persistentDataPath + "/" + "Archipelago");
+		//if (ArchipelagoClient.Authenticated && ArchipelagoClient.session != null)
+
+		
+		//Directory.CreateDirectory(Application.persistentDataPath + "/" + "Archipelago");
 	}
 
 	private void Update()
@@ -133,16 +131,17 @@ public class Plugin : BaseUnityPlugin
 		
 		var playButton = GameObject.Find("Main Menu").GetComponent<MainMenu2>().m_playButton;
 		BepinLogger.LogInfo(playButton.name);
-		playButton.onClick.RemoveAllListeners();
-
-		BepinLogger.LogInfo(playButton.onClick.GetCallsCount());
-		
-
-		playButton.onClick.AddListener(SavedGameLoader.LoadArchipelagoData);
-		BepinLogger.LogInfo(playButton.onClick.GetCallsCount());
+		//playButton.onClick.RemoveAllListeners();
+		//playButton.onClick.AddListener(SavedGameLoader.LoadArchipelagoData);
 		GameObject.Find("Main Menu/MainFrame/PlayButton/Menu Button/LABEL").GetComponent<TextMeshProUGUI>().text = "Play Archipelago";
 
 		SceneManager.sceneLoaded += SavedGameLoader.OnSceneLoaded;
+
+		BepinLogger.LogInfo("Creating save directory");
+		SavePath = Application.persistentDataPath + "/" + "AP_" + ArchipelagoClient.session.RoomState.Seed + "/" + "run.txt";
+		SavePathBackup = Application.persistentDataPath + "/" + "AP_" + ArchipelagoClient.session.RoomState.Seed + "/" + "run_temp.txt";
+
+		Directory.CreateDirectory(Application.persistentDataPath + "/" + "AP_" + ArchipelagoClient.session.RoomState.Seed);
 	}
 
 	public static void ReceiveCashItem(int id)
@@ -396,6 +395,7 @@ public class Plugin : BaseUnityPlugin
 	public static void ReceiveMiscItem(int id)
 	{
 		if (SceneManager.GetActiveScene().name != "Main") return;
+		BepinLogger.LogInfo("Receiving misc item: " + id);
 		switch (id)
 		{
 			case 2: //putter
@@ -426,6 +426,14 @@ public class Plugin : BaseUnityPlugin
 			case 7: //practice panel
 				GameObject.Find("__Managers House/Progress").GetComponent<ProgressManager>().UnlockPractice(true);
 				break;
+
+			case 8: //crouching
+				SavedGameLoader.CanCrouch = true;
+				break;
+
+			case 9: //rangefinder
+				SavedGameLoader.CanRangeFind = true;
+				break;
 		}
 	}
 
@@ -444,6 +452,14 @@ public class Plugin : BaseUnityPlugin
 
 			case 3002:  //music pitch up
 				SavedGameLoader.SetMusicPitchHigh();
+				break;
+
+			case 3003: //music pitch normal
+				SavedGameLoader.SetMusicPitchNormal();
+				break;
+
+			case 3004: //slightly increase movespeed
+				SavedGameLoader.IncreaseSprintSpeed(1f);
 				break;
 		}
 	}
@@ -475,6 +491,10 @@ public class Plugin : BaseUnityPlugin
 
 			case 4005: //evil kookaburra
 				SavedGameLoader.MakeKookaburraEvil();
+				break;
+
+			case 4006: //annoying birbs
+				SavedGameLoader.EnableAnnoyingBirds();
 				break;
 		}
 	}

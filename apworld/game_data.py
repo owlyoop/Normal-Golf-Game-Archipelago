@@ -158,10 +158,9 @@ shop_data: dict[str, ShopItem] = {
     "Pro Shop Buy Hole Skip #5" : {"id": ID_OFFSET_LOCATION_SHOP + 20, "cost":700, "region": Regions.ProShop}
 }
 
-#todo: driveway picket fence cash can be collected from either holes6-9 or holes2-5
 stray_cash_data: dict[str, StrayCashItem] = {
     "Stray Cash (pro shop shelf)" : {"id" : ID_OFFSET_LOCATION_STRAY_CASH, "region": Regions.ProShop},
-    "Stray Cash (cash register)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 1, "region":Regions.ProShop},
+    "Stray Cash (cash register)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 1, "region":Regions.ProShop_Upstairs},
     "Stray Cash (boxes behind register)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 2, "region": Regions.ProShop_Upstairs},
     "Stray Cash (practice putt)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 3, "region":Regions.Hole_1_Area},
     "Stray Cash (hole 3 picnic table)": {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 4, "region": Regions.Holes_2_to_5},

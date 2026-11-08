@@ -1,6 +1,8 @@
 ﻿//using App.
 using Archipelago.MultiClient.Net.Models;
 using BepInEx.Logging;
+using ECM2;
+using ECM2.Examples.FirstPerson;
 using HarmonyLib;
 using I2.Loc.SimpleJSON;
 using NormalGolfArchiProject;
@@ -13,6 +15,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Utilities;
 
@@ -37,7 +40,6 @@ namespace NormalGolfArchiProject.Patcher
 		private static void BountyPad_Complete_Postfix(BountyPad __instance)
 		{
 			Plugin.BepinLogger.LogInfo($"Bounty completed: {__instance.name}");
-			int value = BountyBalancer.instance.GetDifficultyValue(__instance.m_bountyChallengeSet.difficulty);
 
 			// send your AP check here
 			//gets the ID (game_data.py) from the bounty. ID uses the sibling index
@@ -58,10 +60,21 @@ namespace NormalGolfArchiProject.Patcher
 			if (result)
 			{
 				Plugin.BepinLogger.LogInfo("Sending check " + (prefix + suffix));
-				//ProgressManager.instance.m_bank.ChangeBalance(-value, halfSound: false, fast: true);
 			}
 
 			SavedGameLoader.ChallengeReminder.SetString("test");
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(ChallengeSystem), nameof(ChallengeSystem.CompleteChallenge), new Type[] {typeof(Challenge)})]
+		private static void ChallengeSystem_CompleteChallenge_Postfix(ChallengeSystem __instance, Challenge __0)
+		{
+			SavedGameLoader.CompletedBounties = SaveManager.instance.m_run.m_completedBounties.Count;
+			Plugin.BepinLogger.LogInfo("Number of completed bounties: " + SavedGameLoader.CompletedBounties);
+			if (SavedGameLoader.CompletedBounties >= SavedGameLoader.BountyGoal)
+			{
+				Plugin.ArchipelagoClient.session.SetGoalAchieved();
+			}
 		}
 
 		[HarmonyPostfix]
@@ -72,14 +85,15 @@ namespace NormalGolfArchiProject.Patcher
 			{
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
-				var session = Plugin.ArchipelagoClient.session;
+				
+				/*var session = Plugin.ArchipelagoClient.session;
 				long[] ids = new[] { (long)__instance.m_interaction };
 				int id = (int)ids[0];
 				if (!SavedGameLoader.FPSInteractableCachedItems.ContainsKey(id))
 				{
 					Dictionary<long, ScoutedItemInfo> scouts = session.Locations.ScoutLocationsAsync(false, ids).Result;
 					SavedGameLoader.FPSInteractableCachedItems[id] = scouts[(long)__instance.m_interaction].ItemName;
-				}
+				}*/
 
 				ie.m_useText.text.text = "Buy: " + SavedGameLoader.FPSInteractableCachedItems[(int)__instance.m_interaction];
 
@@ -89,14 +103,15 @@ namespace NormalGolfArchiProject.Patcher
 			{
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
-				var session = Plugin.ArchipelagoClient.session;
+
+				/*var session = Plugin.ArchipelagoClient.session;
 				long[] ids = new[] { (long)__instance.m_interaction };
 				int id = (int)ids[0];
 				if (!SavedGameLoader.strayCashFPSInteractables.ContainsKey(id))
 				{
 					Dictionary<long, ScoutedItemInfo> scouts = session.Locations.ScoutLocationsAsync(false, ids).Result;
 					SavedGameLoader.strayCashFPSInteractables[id] = scouts[(long)__instance.m_interaction].ItemName;
-				}
+				}*/
 				ie.m_useText.text.text = "Collect: " + SavedGameLoader.strayCashFPSInteractables[(int)__instance.m_interaction];
 			}
 		}
@@ -174,6 +189,7 @@ namespace NormalGolfArchiProject.Patcher
 				{
 					ProgressManager.instance.m_bank.ChangeBalance(-__instance.m_cashValue, halfSound: true, fast: true);
 					boughtCheck = true;
+					SaveManager.instance.SaveRun();
 				}
 			}
 
@@ -190,8 +206,9 @@ namespace NormalGolfArchiProject.Patcher
 
 
 			Plugin.ArchipelagoClient.SendCheck((int)__instance.m_interaction);
-			__instance.gameObject.SetActive(false);
+			__instance.m_topOfObject.SetActive(false);
 
+			SaveManager.instance.SaveRun();
 		}
 
 		[HarmonyPostfix]
@@ -277,105 +294,97 @@ namespace NormalGolfArchiProject.Patcher
 				if (id >= 2 && id <= 7) Plugin.ReceiveMiscItem(id);
 			}
 		}
+
+		/*Selects the player's starting club the first time they activate golfswing mode.
+		 * This code is ugly but simply doing SelectNextClub would not let the player's hands be clickable
+		*/
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(MoveAndHitController), nameof(MoveAndHitController.SwitchToGolf))]
+		private static void MoveAndHitController_SwitchToGolf_Postfix(MoveAndHitController __instance)
+		{
+			if (SavedGameLoader.hasOpenedClubPanel) return;
+
+			var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
+			SelectableClub driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
+			SelectableClub hybrid = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Hybrid").GetComponent<SelectableClub>();
+			SelectableClub iron = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/7 Iron").GetComponent<SelectableClub>();
+			SelectableClub wedge = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Wedge").GetComponent<SelectableClub>();
+			SelectableClub putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Putter").GetComponent<SelectableClub>();
+
+
+			switch (SavedGameLoader.StartingClub)
+			{
+				case 4:
+					selectClub.SelectAClub(driver.m_thisClub);
+					break;
+
+				case 3:
+					selectClub.SelectAClub(hybrid.m_thisClub);
+					break;
+
+				case 2:
+					selectClub.SelectAClub(iron.m_thisClub);
+					break;
+
+				case 1:
+					selectClub.SelectAClub(wedge.m_thisClub);
+					break;
+
+				case 0:
+					selectClub.SelectAClub(putter.m_thisClub);
+					break;
+			}
+
+			//selectClub.SelectNextClub(true);
+			SavedGameLoader.hasOpenedClubPanel = true;
+		}
+
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(FirstPersonCharacterInput), nameof(FirstPersonCharacterInput.Update))]
+		private static void FirstPersonCharacterInput_Update_Postfix(FirstPersonCharacterInput __instance)
+		{
+			//Allow crouching without SaveManager.instance.m_run.m_putterUnlocked
+			if (__instance.m_input.actions["Crouch"].WasPressedThisFrame() && SavedGameLoader.CanCrouch)
+			{
+				__instance._character.Crouch();
+			}
+			else if (__instance.m_input.actions["Crouch"].WasReleasedThisFrame())
+			{
+				__instance._character.UnCrouch();
+			}
+
+			if (!SavedGameLoader.CanCrouch)
+			{
+				__instance.m_eyes.localPosition = new Vector3(__instance.m_eyes.localPosition.x, 
+					Mathf.Lerp(__instance.m_eyes.localPosition.y, __instance.m_standingHeight, __instance.m_crouchSpeed * Time.deltaTime), 
+					__instance.m_eyes.localPosition.z);
+				__instance.TurnOffGrid();
+			}
+
+			if (!SavedGameLoader.CanRangeFind)
+			{
+				__instance.m_fpsCam.fieldOfView = __instance.m_normalFOV;
+				__instance.m_rangeFinder.gameObject.SetActive(false);
+			}
+		}
 	}
 
-
-	[HarmonyPatch(typeof(SaveManager), "WriteSave")]
-	public class SaveManager_WriteSave_Prefix
+	//Prevents the dialogue sequence that opens the hole 5 shed door after completing the 'Great Explorer' bounty
+	//making the m_bountyChallengeSet.m_challenges.functionOnComplete string empty never registered the bounty as being complete so thisll have to do
+	[HarmonyPatch(typeof(DialogueManager), "StartTeleporterDialogue")]
+	public class DialogueManagerPatcher
 	{
 		[HarmonyPrefix]
-		static bool Prefix(SaveManager __instance, ref IEnumerator __result, string json)
+		static bool Prefix(DialogueManager __instance)
 		{
-			__result = Archipelago_WriteSave(__instance, json);
 			return false;
 		}
 
-		//I received permission from Luke Muscat to use this function taken from the original game's code & minorly edited.
-		//Taken from the game's original WriteSave function. Identical except it should save in an archipelago folder
-		static IEnumerator Archipelago_WriteSave(SaveManager __instance, string json)
+		static void DialogueManager_StartTeleporterDialogue(DialogueManager __instance)
 		{
-			while (MoveAndHitController.instance.m_moveLocked)
-			{
-				yield return null;
-			}
-			if (__instance.m_debugNoSave)
-			{
-				Debug.Log("Did not save, debugNoSave is on!");
-				yield break;
-			}
-			if (__instance.m_gamemodeState.mode == GameMode.Story)
-			{
-				__instance.SafeWrite(Plugin.SavePath, __instance.m_runSavePath_writeBackUp, json);
-			}
-			if (__instance.m_gamemodeState.mode == GameMode.JustGolf)
-			{
-				File.WriteAllText(__instance.m_normalGolfSavePath, json);
-			}
-			Debug.Log("Saved!");
-
-			Plugin.BepinLogger.LogInfo("Harmony WriteSave Prefix Saved!");
+			SaveManager.instance.m_run.m_completedBounties.Add(__instance.m_crossCountyChallenge);
+			__instance.m_crossCountryPad.Complete(false);
 		}
-	}
-
-
-	[HarmonyPatch(typeof(SaveManager), "LoadStoryRun")]
-	public class SaveManager_LoadStoryRun_Prefix
-	{
-		[HarmonyPrefix]
-		static bool Prefix(SaveManager __instance, ref RunSave __result)
-		{
-			__result = Archipelago_LoadStoryRun(__instance);
-			return false;
-		}
-
-		//I received permission from Luke Muscat to use this function taken from the original game's code & minorly edited.
-		static RunSave Archipelago_LoadStoryRun(SaveManager __instance)
-		{
-			if (!File.Exists(Plugin.SavePath) && !File.Exists(Plugin.SavePathBackup))
-			{
-				Plugin.BepinLogger.LogInfo("Calling SavedGameLoader.LoadArchipelagoData");
-				__instance.ApplyStoryModeDefaults();
-				//SavedGameLoader.LoadArchipelagoData();
-			}
-			else
-			{
-				try
-				{
-					RunSave run = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePath));
-					__instance.m_run = run;
-				}
-				catch (Exception e)
-				{
-					Plugin.BepinLogger.LogInfo(e.Message);
-					Debug.Log("Failed to load primary save, trying temp");
-					try
-					{
-						RunSave run2 = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePathBackup));
-						__instance.m_run = run2;
-					}
-					catch (Exception)
-					{
-						Debug.Log("Failed to load backup save, reverting to default");
-						//__instance.ApplyStoryModeDefaults();
-						SavedGameLoader.LoadArchipelagoData();
-					}
-				}
-				if (__instance.m_run.finishedDemo && !__instance.m_isDemo && SceneManager.GetActiveScene().name == "Main")
-				{
-					__instance.UpgradeDemoSave();
-				}
-				if (__instance.m_run.m_bankBalance == -7)
-				{
-					__instance.m_run.m_bankBalance = -10;
-				}
-				if (SceneManager.GetActiveScene().name == "Main")
-				{
-					__instance.SetUpScene();
-				}
-			}
-			Plugin.BepinLogger.LogInfo("Harmony LoadStoryRun Prefix Loaded!");
-			return __instance.m_run;
-		}
-
 	}
 }

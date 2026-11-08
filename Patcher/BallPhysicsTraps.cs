@@ -6,15 +6,71 @@ using UnityEngine;
 namespace NormalGolfArchiProject.Patcher
 {
 
-	/*public class PhysicsTrap
+	public enum GolfSurface
+	{
+		Rough,
+		Fairway,
+		Green,
+		Bunker
+	}
+
+	public enum PhysicsAttribute
+	{
+		Friction,
+		Bounciness
+	}
+
+	public class PhysicsTrap
 	{
 		public float time;
 		public bool IsActive;
+		public GolfSurface surface;
+		public PhysicsAttribute attribute;
+		public float newValue;
+
+		int m_physicsIndex;
+		public PhysicsTrap(GolfSurface surface, PhysicsAttribute attribute, float newValue)
+		{
+			this.surface = surface;
+			this.attribute = attribute;
+			this.newValue = newValue;
+
+			switch(surface)
+			{
+				case GolfSurface.Fairway:
+					m_physicsIndex = 1;
+					break;
+				case GolfSurface.Green:
+					m_physicsIndex = 2;
+					break;
+				case GolfSurface.Rough:
+					m_physicsIndex = 4;
+					break;
+				default:
+					m_physicsIndex = -1;
+					Plugin.BepinLogger.LogError("Invalid surface type for PhysicsTrap");
+					break;
+			}
+
+			IsActive = false;
+		}
 
 		public void ActivateTrap(float duration)
 		{
-			time = duration;
+			time += duration;
 			IsActive = true;
+
+			if (attribute == PhysicsAttribute.Friction)
+			{
+				SavedGameLoader.ball.m_physics[m_physicsIndex].frictionCombine = PhysicsMaterialCombine.Minimum;
+				SavedGameLoader.ball.m_physics[m_physicsIndex].staticFriction = newValue;
+				SavedGameLoader.ball.m_physics[m_physicsIndex].dynamicFriction = newValue;
+			}
+			else if (attribute == PhysicsAttribute.Bounciness)
+			{
+				SavedGameLoader.ball.m_physics[m_physicsIndex].bounceCombine = PhysicsMaterialCombine.Maximum;
+				SavedGameLoader.ball.m_physics[m_physicsIndex].bounciness = newValue;
+			}
 		}
 
 		public void Update()
@@ -26,11 +82,14 @@ namespace NormalGolfArchiProject.Patcher
 				IsActive = false;
 			}
 		}
-	}*/
+	}
 
 	public static class BallPhysicsTraps
 	{
-		//todo make less repetitive
+
+		public static List<PhysicsTrap> traps = new List<PhysicsTrap>();
+
+		//original physics values
 		public static PhysicsMaterialCombine greenFC = PhysicsMaterialCombine.Maximum;
 		public static float greenFriction = 0.2f;
 		public static PhysicsMaterialCombine greenBC = PhysicsMaterialCombine.Average;
@@ -41,148 +100,125 @@ namespace NormalGolfArchiProject.Patcher
 		public static PhysicsMaterialCombine fairwayBC = PhysicsMaterialCombine.Average;
 		public static float fairwayBounciness = 0.3f;
 
-		public static PhysicsMaterial icyGreen;
-		public static PhysicsMaterial icyFairway;
-		public static PhysicsMaterial bouncyGreen;
-		public static PhysicsMaterial bouncyFairway;
 
-		public static float icyGreenFriction = 0.032f;
-		public static float icyFairwayFriction = 0.064f;
-		public static float bouncyFairwayBounciness = 0.95f;
-		public static float bouncyGreenBounciness = 0.85f;
-
-		public static bool IsIcyGreen = false;
-		public static bool IsIcyFairway = false;
-		public static bool IsBouncyGreen = false;
-		public static bool IsBouncyFairway = false;
 		public static bool IsAcceleratedFairway = false;
+		private static float _timeAccelFairway;
 
-		private static float timeAccelFairway;
+		public static PhysicsTrap IcyGreen;
+		public static PhysicsTrap BouncyGreen;
 
-		private static float timeIcyGreen;
-		private static float timeIcyFairway;
-		private static float timeBouncyGreen;
-		private static float timeBouncyFairway;
+		public static PhysicsTrap IcyFairway;
+		public static PhysicsTrap BouncyFairway;
+
+		public static int CurrentActiveGreenTraps;
+		public static int CurrentActiveFairwayTraps;
+		public static int CurrentActiveRoughTraps;
+
+		private static bool _greenDirty;
+		private static bool _fairwayDirty;
+		private static bool _roughDirty;
+
+		public static void InitializeTraps()
+		{
+			IcyGreen = new PhysicsTrap(GolfSurface.Green, PhysicsAttribute.Friction, 0.032f);
+			traps.Add(IcyGreen);
+			BouncyGreen = new PhysicsTrap(GolfSurface.Green, PhysicsAttribute.Bounciness, 0.85f);
+			traps.Add(BouncyGreen);
+
+			IcyFairway = new PhysicsTrap(GolfSurface.Fairway, PhysicsAttribute.Friction, 0.064f);
+			traps.Add(IcyFairway);
+			BouncyFairway = new PhysicsTrap(GolfSurface.Fairway, PhysicsAttribute.Bounciness, 0.95f);
+			traps.Add(BouncyFairway);
+
+		}
+
 		public static void Update()
 		{
-			//todo make this better
-			if (IsIcyGreen)
-				timeIcyGreen -= Time.deltaTime;
-			if (IsIcyFairway)
-				timeIcyFairway -= Time.deltaTime;
-			if (IsBouncyGreen)
-				timeBouncyGreen -= Time.deltaTime;
-			if (IsBouncyFairway)
-				timeBouncyFairway -= Time.deltaTime;
-			if (IsAcceleratedFairway)
-				timeAccelFairway -= Time.deltaTime;
-
-			if (timeIcyGreen <= 0f)
+			CurrentActiveGreenTraps = 0;
+			CurrentActiveFairwayTraps = 0;
+			CurrentActiveRoughTraps = 0;
+			foreach (var trap in traps)
 			{
-				timeIcyGreen = 0f;
-				IsIcyGreen = false;
+				if (!trap.IsActive) continue;
+				trap.Update();
 
+				switch (trap.surface)
+				{
+					case GolfSurface.Green:
+						CurrentActiveGreenTraps++;
+						_greenDirty = true;
+						break;
+					case GolfSurface.Fairway:
+						CurrentActiveFairwayTraps++;
+						_fairwayDirty = true;
+						break;
+					case GolfSurface.Rough:
+						CurrentActiveRoughTraps++;
+						_roughDirty = true;
+						break;
+				}
+			}
+
+			//Reset all the physics materials values to their vanilla values
+			if (CurrentActiveGreenTraps == 0 && _greenDirty)
+			{
 				SavedGameLoader.ball.m_physics[2].frictionCombine = greenFC;
 				SavedGameLoader.ball.m_physics[2].staticFriction = greenFriction;
 				SavedGameLoader.ball.m_physics[2].dynamicFriction = greenFriction;
+				SavedGameLoader.ball.m_physics[2].bounceCombine = greenBC;
+				SavedGameLoader.ball.m_physics[2].bounciness = greenBounciness;
+
+				_greenDirty = false;
 			}
-
-			if (timeIcyFairway <= 0f)
+			if (CurrentActiveFairwayTraps == 0 && _fairwayDirty)
 			{
-				timeIcyFairway = 0f;
-				IsIcyFairway = false;
-
 				SavedGameLoader.ball.m_physics[1].frictionCombine = fairwayFC;
 				SavedGameLoader.ball.m_physics[1].staticFriction = fairwayFriction;
 				SavedGameLoader.ball.m_physics[1].dynamicFriction = fairwayFriction;
-			}
-
-			if (timeBouncyGreen <= 0f)
-			{
-				timeBouncyGreen = 0f;
-				IsBouncyGreen = false;
-
-				SavedGameLoader.ball.m_physics[2].bounceCombine = greenBC;
-				SavedGameLoader.ball.m_physics[2].bounciness = greenBounciness;
-			}
-
-			if (timeBouncyFairway <= 0f)
-			{
-				timeBouncyFairway = 0f;
-				IsBouncyFairway = false;
-
 				SavedGameLoader.ball.m_physics[1].bounceCombine = fairwayBC;
 				SavedGameLoader.ball.m_physics[1].bounciness = fairwayBounciness;
+
+				_fairwayDirty = false;
+			}
+			if (CurrentActiveRoughTraps == 0 && _roughDirty)
+			{
+
 			}
 
-			if (timeAccelFairway <= 0f)
+			_timeAccelFairway -= Time.deltaTime;
+
+			//physics traps that arent simple attribute changes
+			if (_timeAccelFairway <= 0f)
 			{
-				timeAccelFairway = 0f;
+				_timeAccelFairway = 0f;
 				IsAcceleratedFairway = false;
 			}
 		}
 
-		public static void InitializePhysicsMaterials()
-		{
-			icyGreen = UnityEngine.Object.Instantiate(SavedGameLoader.physGreenBase);
-			icyGreen.frictionCombine = PhysicsMaterialCombine.Minimum;
-			icyGreen.staticFriction = icyGreenFriction;
-			icyGreen.dynamicFriction = icyGreenFriction;
-
-			icyFairway = UnityEngine.Object.Instantiate(SavedGameLoader.physFairwayBase);
-			icyFairway.frictionCombine = PhysicsMaterialCombine.Minimum;
-			icyFairway.staticFriction = icyFairwayFriction;
-			icyFairway.dynamicFriction = icyFairwayFriction;
-
-			bouncyGreen = UnityEngine.Object.Instantiate(SavedGameLoader.physGreenBase);
-			bouncyGreen.bounceCombine = PhysicsMaterialCombine.Maximum;
-			bouncyGreen.bounciness = bouncyGreenBounciness;
-
-			bouncyFairway = UnityEngine.Object.Instantiate(SavedGameLoader.physFairwayBase);
-			bouncyFairway.bounceCombine = PhysicsMaterialCombine.Maximum;
-			bouncyFairway.bounciness = bouncyFairwayBounciness;
-		}
-
 		public static void ActivateAcceleratedFairwayTrap(float duration)
 		{
-			timeAccelFairway = duration;
+			_timeAccelFairway = duration;
 			IsAcceleratedFairway = true;
 		}
 
 		public static void ActivateIcyGreen(float duration)
 		{
-			timeIcyGreen = duration;
-			IsIcyGreen = true;
-			SavedGameLoader.ball.m_physics[2].frictionCombine = icyGreen.frictionCombine;
-			SavedGameLoader.ball.m_physics[2].staticFriction = icyGreen.staticFriction;
-			SavedGameLoader.ball.m_physics[2].dynamicFriction = icyGreen.dynamicFriction;
+			IcyGreen.ActivateTrap(duration);
 		}
 
 		public static void ActivateIcyFairway(float duration)
 		{
-			timeIcyFairway = duration;
-			IsIcyFairway = true;
-			SavedGameLoader.ball.m_physics[1].frictionCombine = icyFairway.frictionCombine;
-			SavedGameLoader.ball.m_physics[1].staticFriction = icyFairway.staticFriction;
-			SavedGameLoader.ball.m_physics[1].dynamicFriction = icyFairway.dynamicFriction;
+			IcyFairway.ActivateTrap(duration);
 		}
 
 		public static void ActivateBouncyGreen(float duration)
 		{
-			timeBouncyGreen = duration;
-			IsBouncyGreen = true;
-
-			SavedGameLoader.ball.m_physics[2].bounceCombine = bouncyGreen.bounceCombine;
-			SavedGameLoader.ball.m_physics[2].bounciness = bouncyGreen.bounciness;
+			BouncyGreen.ActivateTrap(duration);
 		}
 
 		public static void ActivateBouncyFairway(float duration)
 		{
-			timeBouncyFairway = duration;
-			IsBouncyFairway = true;
-
-			SavedGameLoader.ball.m_physics[1].bounceCombine = bouncyFairway.bounceCombine;
-			SavedGameLoader.ball.m_physics[1].bounciness = bouncyFairway.bounciness;
+			BouncyFairway.ActivateTrap(duration);
 		}
 	}
 }

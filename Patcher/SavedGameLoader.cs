@@ -1,4 +1,6 @@
-﻿using BepInEx.Logging;
+﻿using Archipelago.MultiClient.Net.Models;
+using BepInEx.Logging;
+using ECM2.Walkthrough.Ex42;
 using HarmonyLib;
 using Mono.Cecil.Cil;
 using NormalGolfArchiProject;
@@ -8,11 +10,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static System.Collections.Specialized.BitVector32;
 
 namespace NormalGolfArchiProject.Patcher
 {
@@ -28,15 +32,28 @@ namespace NormalGolfArchiProject.Patcher
 		private static bool startsWedge = StartingClub == 1;
 		private static bool startsPutter = StartingClub == 0;
 
-		private static int shopInteractEnum = 50000; //Archipelago ID offset for shop locations
-		private static int strayCashInteractEnum = 60000; //Archipelago ID offset for stray cash locations
-		private static int upstairsCashInteractEnum = 61000;
-		public static bool hasOpenedClubPanel = false;
+		private static int _shopInteractEnum = 50000; //Archipelago ID offset for shop locations
+		private static int _strayCashInteractEnum = 60000; //Archipelago ID offset for stray cash locations
+		private static int _upstairsCashInteractEnum = 61000;
 
 		public static int BountyGoal = 105;
+		public static int CompletedBounties = 0;
+
+		public static bool CanCrouch = false;
+		public static bool CanRangeFind = false;
+
+		public static bool hasOpenedClubPanel = false;
+
+		//todo: move traps out of here
+		private static float _timeKookaburra;
+		private static bool _kookaburraActive = false;
+
+		private static float _timeAnnoyingBirds;
+		private static bool _annoyingBirdsActive = false;
 
 		#region References
-		static List<FPSInteractable> shopItems = new List<FPSInteractable>(); //im not using this afaik
+		static List<FPSInteractable> shopItems = new List<FPSInteractable>();
+		static List<FPSInteractable> cashItems = new List<FPSInteractable>();
 		public static Dictionary<int, string> FPSInteractableCachedItems = new Dictionary<int, string>(); //Stores
 		public static Dictionary<int, string> strayCashFPSInteractables = new Dictionary<int, string>();
 		public static InteractChecker Eye;
@@ -45,37 +62,59 @@ namespace NormalGolfArchiProject.Patcher
 		public static Ball ball;
 		public static WindPanel wind;
 
-		public static PhysicsMaterial physGreenBase;
-		public static PhysicsMaterial physFairwayBase;
-		
+		static SprintAbility sprint;
 
 		static AmbienceManager ambience;
 		static AudioSource radio;
 		static AudioSource kookaburra;
 		static AudioSource shopMusic;
-		static float evilKookaburraPitch = 0.4f;
-		static float evilkookaburraVolume = 0.32f;
 		#endregion
 
-		public static void LoadArchipelagoData()
+		public static void Update()
+		{
+
+			_timeKookaburra -= Time.deltaTime;
+			if (_timeKookaburra <= 0f)
+			{
+				_timeKookaburra = 0f;
+				if (_kookaburraActive)
+					ResetKookaburraSounds();
+			}
+
+			_timeAnnoyingBirds -= Time.deltaTime;
+			if (_timeAnnoyingBirds <= 0f)
+			{
+				_timeAnnoyingBirds = 0f;
+				if (_annoyingBirdsActive)
+					ResetBirdSounds();
+			}
+
+		}
+
+		public static void SetOptionsValues()
 		{
 			var data = ArchipelagoClient.ServerData.SlotData;
 			StartingClub = int.Parse(data["starting_club"].ToString());
 			BountyGoal = int.Parse(data["req_bounties_to_win"].ToString());
-			
+		}
+
+		public static void CreateSaveData()
+		{
+			Plugin.BepinLogger.LogInfo("===Running CreateSaveData===");
+			SetOptionsValues();
+			var data = ArchipelagoClient.ServerData.SlotData;
+
 			//todo, set new runsavepath
 			bool putter = StartingClub == 0;
 			bool wedge = StartingClub == 1;
 			bool iron = StartingClub == 2;
 			bool hybrid = StartingClub == 3;
 			bool driver = StartingClub == 4;
-			iron = true;	//i cant figure out how to get the clubs panel working if i load the save without the iron. ill just disable the iron later if needed
+			iron = true;	//i couldn't figure out how to get the clubs panel working if i load the save without the iron. i just disable the iron later
 			Plugin.BepinLogger.LogInfo("Starting club is " + StartingClub);
 
 
-
-			//TODO: I am never actually loading the save.
-			//I think I got it working to where it saves it in an Archipelago folder so it doesn't overwrite the players saves. i still need to test that more
+			
 			//This was copied from the DebugLoadSave func from ILSpy. There's probably a more elegant way to handle saves.
 			#region savefile
 			string rawSave = "{\"m_playerPosition\":{\"x\":103.63618469238281,\"y\":2.8397185802459719,\"z\":-184.50772094726563}," +
@@ -126,13 +165,9 @@ namespace NormalGolfArchiProject.Patcher
 			rawSave = rawSave.Replace(	"\"m_playerPosition\":{\"x\":103.63618469238281,\"y\":2.8397185802459719,\"z\":-184.50772094726563}",
 										$"\"m_playerPosition\":{{\"x\":{startingPos.x},\"y\":{startingPos.y},\"z\":{startingPos.z}}}");
 			
-			//SavePath = SaveManager.instance.m_backupSavePath + "Archipelago/run2.txt";
+
 			Plugin.BepinLogger.LogInfo("Writing save data");
-			Directory.CreateDirectory(SaveManager.instance.m_backupSavePath + "Archipelago");
-
 			File.WriteAllText(Plugin.SavePath, rawSave);
-			//File.WriteAllText(SaveManager.instance.m_runSavePath, rawSave);
-
 			Plugin.BepinLogger.LogInfo("Loading scene");
 
 
@@ -152,25 +187,31 @@ namespace NormalGolfArchiProject.Patcher
 		public static void InitializeWorld()
 		{
 			Plugin.BepinLogger.LogInfo("InitializeWorld called");
+
+			SetOptionsValues();
+
 			LockAllBounties();
 			CloseAllGates();
 			CloseAllProShopDoors();
 			CloseAllShedDoors();
-			SetClubs();
+
 			SetupProShop();
 			SetupAllStrayCash();
 			SetupBreakables();
+
+			SetClubs();
 			RemoveCashRewards();
 			PreparePhysicsMaterials();
 			PrepareAudioReferences();
 
+			CreateMountaintopGate();
+
 			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
 			{
 				int id = (int)item.ItemId;
-				if (id >= 2 && id <= 7) Plugin.ReceiveMiscItem(id);
+				if (id >= 2 && id <= 9) Plugin.ReceiveMiscItem(id);
 				else if (id >= 600 && id <= 608) Plugin.ReceiveDifficultyUnlockItem(id);
 				else if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
-				else if (id >= 2000 && id <= 2009) Plugin.ReceiveCashItem(id);
 			}
 
 			//UnlockStartingDifficulties();
@@ -180,8 +221,40 @@ namespace NormalGolfArchiProject.Patcher
 			SaveManager = GameObject.Find("__Managers House/SaveManager").GetComponent<SaveManager>();
 
 			wind = GameObject.Find("PANEL_Wind").GetComponent<WindPanel>();
+			sprint = GameObject.Find("___PLAYER/First Person Character").GetComponent<SprintAbility>();
 
-			CreateMountaintopGate();
+			//disable the event that triggers after completing the My First MultiHit bounty
+			BountyPad mh = GameObject.Find("!!!Bountys/Special Pads/MULTIHITPad_Tutorial").GetComponent<BountyPad>();
+
+			if (mh.m_bountyChallengeSet.m_completeEnableDialogues.Length > 0)
+				mh.m_bountyChallengeSet.m_completeEnableDialogues[0] = "";
+			else Plugin.BepinLogger.LogWarning("m_completeEnableDialogues never set");
+
+			Plugin.BepinLogger.LogInfo("shopItems");
+			foreach (var i in shopItems)
+			{
+				int id = (int)i.m_interaction;
+				if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(id))
+				{
+					i.m_topOfObject.SetActive(false);
+				}
+			}
+			Plugin.BepinLogger.LogInfo("cashItems");
+			foreach (var i in cashItems)
+			{
+				int id = (int)i.m_interaction;
+				if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(id))
+				{
+					i.m_topOfObject.SetActive(false);
+				}
+			}
+
+			GameObject.Find("3D Course/TEES/GreenTeeLong").gameObject.SetActive(false);
+
+			hasOpenedClubPanel = false;
+
+			CompletedBounties = SaveManager.instance.m_run.m_completedBounties.Count;
+
 		}
 
 		public static void LockAllBounties()
@@ -380,41 +453,32 @@ namespace NormalGolfArchiProject.Patcher
 		public static void SetClubs()
 		{
 			var panel = GameObject.Find("PANEL_ClubsAndMore").GetComponent<ClubsPanelNavigation>();
-			Plugin.BepinLogger.LogInfo("Set Clubs Ahhh " + panel.name);
 			panel.Unlock(true);
 
 			//disable club buttons except the starting ones
 			SelectableClub driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
-			Plugin.BepinLogger.LogInfo("Set Clubs driver ahhh " + driver.name);
 			driver.SetLockedState(StartingClub == 4);
 			driver.Unselect();
 
 			SelectableClub hybrid = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Hybrid").GetComponent<SelectableClub>();
-			Plugin.BepinLogger.LogInfo("Set Clubs hybrid ahhh " + hybrid.name);
 			hybrid.SetLockedState(StartingClub == 3);
 			hybrid.Unselect();
 
 			SelectableClub iron = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/7 Iron").GetComponent<SelectableClub>();
-			Plugin.BepinLogger.LogInfo("Set Clubs iron ahhh " + iron.name);
 			iron.SetLockedState(StartingClub == 2);
 			iron.Unselect();
 
 			SelectableClub wedge = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Wedge").GetComponent<SelectableClub>();
-			Plugin.BepinLogger.LogInfo("Set Clubs wedge ahhh " + wedge.name);
 			wedge.SetLockedState(StartingClub == 1);
 			wedge.Unselect();
 
 			SelectableClub putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Putter").GetComponent<SelectableClub>();
-			Plugin.BepinLogger.LogInfo("Set Clubs putter ahhh " + putter.name);
 			putter.SetLockedState(StartingClub == 0);
 			putter.Unselect();
 
-
-			var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
-			Plugin.BepinLogger.LogInfo("select club " + selectClub.name);
-			selectClub.Start();
-			selectClub.SelectNextClub(true);
-			//selectClub.SelectAClub(Clubs.Driver);
+			//var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
+			//Plugin.BepinLogger.LogInfo("select club " + selectClub.name);
+			//selectClub.SelectNextClub(true);
 		}
 
 		/// <summary>
@@ -422,6 +486,8 @@ namespace NormalGolfArchiProject.Patcher
 		/// </summary>
 		public static void SetupProShop()
 		{
+			_shopInteractEnum = 50000;
+
 			//todo: disable 'out of stock' sign things
 			string clubsParent = "3D Course/PRO SHOP/PROPS/CLUBS/";
 
@@ -475,8 +541,24 @@ namespace NormalGolfArchiProject.Patcher
 			var item = GameObject.Find(goParent + goItem + goTrigger).GetComponent<FPSInteractable>();
 			item.gameObject.SetActive(true);
 			item.transform.parent.gameObject.SetActive(true);
-			item.m_interaction = (InteractionType)shopInteractEnum;
-			shopInteractEnum++;
+			item.m_interaction = (InteractionType)_shopInteractEnum;
+
+			long[] ids = new[] { (long)item.m_interaction };
+			int id = (int)ids[0];
+			if (!FPSInteractableCachedItems.ContainsKey(id))
+			{
+				Dictionary<long, ScoutedItemInfo> scouts = Plugin.ArchipelagoClient.session.Locations.ScoutLocationsAsync(false, ids).Result;
+				FPSInteractableCachedItems[id] = scouts[(long)item.m_interaction].ItemName;
+			}
+
+			if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(_shopInteractEnum))
+			{
+				item.m_topOfObject.gameObject.SetActive(false);
+				item.gameObject.SetActive(false);
+			}
+
+
+			_shopInteractEnum++;
 			shopItems.Add(item);
 			return item;
 		}
@@ -484,8 +566,6 @@ namespace NormalGolfArchiProject.Patcher
 		public static void SetupAllStrayCash()
 		{
 			//3D Course / CASH / NAME / Mesh / Trigger name.FpsInteractable
-
-
 
 			/*
 			 * all paths are like: 3D Course / CASH / 100(1) / Mesh / Trigger
@@ -516,10 +596,9 @@ namespace NormalGolfArchiProject.Patcher
 
 			lake teleporter shed cash in completely different location
 			3D Course/Buildings/miniShed (1)/100 (5)/Mesh/IgnoreWalls
-
-			todo: if i ever add that greenscreen building as a location, thats what cash 100 (6) is.
 			*/
-
+			_strayCashInteractEnum = 60000;
+			_upstairsCashInteractEnum = 61000;
 
 			string cashParent = "3D Course/CASH/";
 			string suffix = "/Mesh/Trigger"; //the suffix of the path for all cash except 50, 100 (7), and the teleport shed cash
@@ -529,8 +608,8 @@ namespace NormalGolfArchiProject.Patcher
 
 
 			var cash0 = SetupFPSInteractable(cashParent, "50", "/Mesh/TriggerIgnoreWalls");
-			var cash1 = SetupFPSInteractable(cashParent, "100", suffix);
-			var cash2 = SetupFPSInteractable(cashParent, "100_dupe", suffix);
+			var cash1 = SetupFPSInteractable(cashParent, "100_dupe", suffix);
+			var cash2 = SetupFPSInteractable(cashParent, "100", suffix);
 			var cash3 = SetupFPSInteractable(cashParent, "100 (1)", suffix);
 			var cash4 = SetupFPSInteractable(cashParent, "100 (2)", suffix);
 			var cash5 = SetupFPSInteractable(cashParent, "100 (3)", suffix);
@@ -581,9 +660,26 @@ namespace NormalGolfArchiProject.Patcher
 		{
 			var cash = GameObject.Find(goParent + goCash + goFPS).GetComponent<FPSInteractable>();
 			//Plugin.BepinLogger.LogInfo(cash.name);
-			cash.gameObject.SetActive(true);
-			cash.m_interaction = (InteractionType)strayCashInteractEnum;
-			strayCashInteractEnum++;
+			//cash.gameObject.SetActive(true);
+			cash.m_interaction = (InteractionType)_strayCashInteractEnum;
+
+			long[] ids = new[] { (long)cash.m_interaction };
+			int id = (int)ids[0];
+			if (!strayCashFPSInteractables.ContainsKey(id))
+			{
+				Dictionary<long, ScoutedItemInfo> scouts = Plugin.ArchipelagoClient.session.Locations.ScoutLocationsAsync(false, ids).Result;
+				strayCashFPSInteractables[id] = scouts[(long)cash.m_interaction].ItemName;
+			}
+
+			if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(_strayCashInteractEnum))
+			{
+				cash.m_topOfObject.gameObject.SetActive(false);
+				cash.gameObject.SetActive(false);
+			}
+
+			_strayCashInteractEnum++;
+
+			cashItems.Add(cash);
 			return cash;
 		}
 
@@ -591,9 +687,25 @@ namespace NormalGolfArchiProject.Patcher
 		{
 			var cash = GameObject.Find(goParent + goCash + goFPS).GetComponent<FPSInteractable>();
 			//Plugin.BepinLogger.LogInfo(cash.name);
-			cash.gameObject.SetActive(true);
-			cash.m_interaction = (InteractionType)upstairsCashInteractEnum;
-			upstairsCashInteractEnum++;
+			//cash.gameObject.SetActive(true);
+			cash.m_interaction = (InteractionType)_upstairsCashInteractEnum;
+
+			long[] ids = new[] { (long)cash.m_interaction };
+			int id = (int)ids[0];
+			if (!strayCashFPSInteractables.ContainsKey(id))
+			{
+				Dictionary<long, ScoutedItemInfo> scouts = Plugin.ArchipelagoClient.session.Locations.ScoutLocationsAsync(false, ids).Result;
+				strayCashFPSInteractables[id] = scouts[(long)cash.m_interaction].ItemName;
+			}
+
+			if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(_upstairsCashInteractEnum))
+			{
+				cash.m_topOfObject.gameObject.SetActive(false);
+				cash.gameObject.SetActive(false);
+			}
+
+			_upstairsCashInteractEnum++;
+			cashItems.Add(cash);
 			return cash;
 		}
 
@@ -703,11 +815,7 @@ namespace NormalGolfArchiProject.Patcher
 		{
 			ball = GameObject.Find("/Ball").GetComponent<Ball>();
 			Plugin.BepinLogger.LogInfo(ball.name);
-			physGreenBase = new PhysicsMaterial();
-			physGreenBase = ball.m_physics[2];
-			physFairwayBase = new PhysicsMaterial();
-			physFairwayBase = ball.m_physics[1];
-			BallPhysicsTraps.InitializePhysicsMaterials();
+			BallPhysicsTraps.InitializeTraps();
 		}
 
 		static void PrepareBreakables()
@@ -768,13 +876,53 @@ namespace NormalGolfArchiProject.Patcher
 			shopMusic.pitch = 2f;
 		}
 
-		public static void MakeKookaburraEvil()
+		public static void SetMusicPitchNormal()
 		{
-			kookaburra.pitch = 0.4f;
-			kookaburra.volume = 0.28f;
+			radio.pitch = 1f;
+			shopMusic.pitch = 1f;
 		}
 
-		
+
+		public static void MakeKookaburraEvil()
+		{
+			_kookaburraActive = true;
+			_timeKookaburra += 120f;
+			ambience.m_sounds[3].pitchRange = new Vector2(0.4f, 0.6f);
+			ambience.m_sounds[3].volumeRange = new Vector2(0.1f, 0.35f);
+			ambience.m_sounds[3].timeRange = new Vector2(60f, 180f);
+			ambience.m_sounds[3].nextSound = 1f;
+		}
+
+		public static void ResetKookaburraSounds()
+		{
+			_kookaburraActive = false;
+			ambience.m_sounds[3].pitchRange = new Vector2(1f, 1f);
+			ambience.m_sounds[3].volumeRange = new Vector2(0.05f, 0.15f);
+			ambience.m_sounds[3].timeRange = new Vector2(120f, 330f);
+		}
+
+		public static void EnableAnnoyingBirds()
+		{
+			_annoyingBirdsActive = true;
+			_timeAnnoyingBirds += 120f;
+			ambience.m_sounds[0].volumeRange = new Vector2(0.8f, 1.6f);
+			ambience.m_sounds[0].timeRange = new Vector2(1.64f, 5f);
+		}
+
+		public static void ResetBirdSounds()
+		{
+			_annoyingBirdsActive = false;
+			ambience.m_sounds[0].volumeRange = new Vector2(0.7f, 1.3f);
+			ambience.m_sounds[0].timeRange = new Vector2(10f, 25f);
+		}
+
+		public static void IncreaseSprintSpeed(float amount)
+		{
+			sprint.StopSprinting();
+			sprint.maxSprintSpeed += amount;
+			if (sprint.maxSprintSpeed > 64f)
+				sprint.maxSprintSpeed = 64f;
+		}
 
 	}
 }

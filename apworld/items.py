@@ -24,6 +24,9 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Iron": ItemClassification.progression | ItemClassification.useful,
     "Hybrid": ItemClassification.progression | ItemClassification.useful,
     "Driver": ItemClassification.progression | ItemClassification.useful,
+    "Unlock Practice Mode": ItemClassification.useful,
+    "Unlock Crouch": ItemClassification.useful,
+    "Unlock Range Finder": ItemClassification.useful,
     "$50": ItemClassification.progression,
     "$75": ItemClassification.progression,
     "$100": ItemClassification.progression,
@@ -44,7 +47,9 @@ ITEM_NAME_TO_ID: dict[str, int] = {
     "Iron": 4,
     "Hybrid": 5,
     "Driver": 6,
-    "Practice Panel": 7,
+    "Unlock Practice Mode": 7,
+    "Unlock Crouch": 8,
+    "Unlock Range Finder": 9,
 }
 
 region_unlocks: list[str] = [
@@ -93,7 +98,9 @@ cash_items: dict[str, int] = {
 filler_items: list[str] = [
     "Filler $50",
     "Music Pitch Down",
-    "Music Pitch Up"
+    "Music Pitch Up",
+    "Music Pitch Normal",
+    "Increase Sprint Speed"
 ]
 
 #id 4000
@@ -103,7 +110,8 @@ trap_items: list[str] = [
     "Bouncy Green Trap",
     "Bouncy Fairway Trap",
     "Accelerated Fairway Trap",
-    "Evil Kookaburra"
+    "Evil Kookaburra",
+    "Annoying Birds"
 ]
 
 cash_id = 0
