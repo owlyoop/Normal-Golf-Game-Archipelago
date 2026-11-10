@@ -49,8 +49,8 @@ However, all of this is trivial to edit in game_data.py
 - Backup your save files from ```C:\Users\[YOUR USERNAME]\AppData\LocalLow\Luke Muscat\Normal Golf Game```  
 - Install BepInEx 5.4.23.5 from https://github.com/BepInEx/BepInEx/releases  
 - Extract the contents into the game's root folder, default is ```C:\Program Files (x86)\Steam\steamapps\common\Normal Golf Game```  
-- Download the zip from Releases, place into ```BepInEx\plugins```
-- It should look like ```\steamapps\common\Normal Golf Game\Normal\BepInEx\plugins\NormalGolfArchiProject``` and "NormalGolfArchiProject" should contain three dll files
+- Download the zip from Releases, extract into ```BepInEx\plugins```
+- The path should look like ```\steamapps\common\Normal Golf Game\Normal\BepInEx\plugins\NormalGolfArchiProject``` and "NormalGolfArchiProject" should contain three dll files
 
 
 ### Known issues:  
