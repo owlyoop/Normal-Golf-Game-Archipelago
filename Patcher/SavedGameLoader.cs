@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 using BepInEx.Logging;
+using ECM2;
 using ECM2.Walkthrough.Ex42;
 using HarmonyLib;
 using Mono.Cecil.Cil;
@@ -171,8 +172,8 @@ namespace NormalGolfArchiProject.Patcher
 			Plugin.BepinLogger.LogInfo("Loading scene");
 
 
-			SceneManager.LoadScene("Main");
-			
+			//SceneManager.LoadScene("Main");
+			GameObject.Find("___PLAYER/First Person Character").GetComponent<CharacterMovement>().SetPosition(startingPos);
 		}
 
 		public static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
