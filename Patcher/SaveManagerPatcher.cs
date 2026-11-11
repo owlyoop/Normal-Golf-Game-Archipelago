@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using I2.Loc.SimpleJSON;
+using Newtonsoft.Json;
 using NormalGolfArchiProject;
 using NormalGolfArchiProject.Archipelago;
 using NormalGolfArchiProject.Utils;
@@ -85,7 +86,8 @@ namespace NormalGolfArchiProject.Patcher
 			{
 				try
 				{
-					RunSave run = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePath));
+					//RunSave run = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePath));
+					RunSave run = JsonConvert.DeserializeObject<RunSave>(File.ReadAllText(Plugin.SavePath));
 					__instance.m_run = run;
 				}
 				catch (Exception e)
@@ -94,7 +96,8 @@ namespace NormalGolfArchiProject.Patcher
 					Debug.Log("Failed to load primary save, trying temp");
 					try
 					{
-						RunSave run2 = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePathBackup));
+						//RunSave run2 = JsonUtility.FromJson<RunSave>(File.ReadAllText(Plugin.SavePathBackup));
+						RunSave run2 = JsonConvert.DeserializeObject<RunSave>(File.ReadAllText(Plugin.SavePathBackup));
 						__instance.m_run = run2;
 					}
 					catch (Exception)
