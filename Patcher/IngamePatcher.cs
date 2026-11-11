@@ -36,6 +36,17 @@ namespace NormalGolfArchiProject.Patcher
 		}
 
 		[HarmonyPostfix]
+		[HarmonyPatch(typeof(MainManager), nameof(MainManager.Start))]
+		private static void MainManager_Start_Postfix(MainManager __instance)
+		{
+			Plugin.BepinLogger.LogInfo("MainManager start()");
+			if (Plugin.ArchipelagoClient.session != null)
+			{
+			}
+
+		}
+
+		[HarmonyPostfix]
 		[HarmonyPatch(typeof(BountyPad), nameof(BountyPad.Complete))]
 		private static void BountyPad_Complete_Postfix(BountyPad __instance)
 		{
@@ -255,19 +266,6 @@ namespace NormalGolfArchiProject.Patcher
 		}
 
 		[HarmonyPostfix]
-		[HarmonyPatch(typeof(MainManager), nameof(MainManager.Start))]
-		private static void MainManager_Start_Postfix(MainManager __instance)
-		{
-			Plugin.BepinLogger.LogInfo("MainManager start()");
-			if (Plugin.ArchipelagoClient.session != null)
-			{
-				Plugin.BepinLogger.LogInfo("Calling SavedGameLoader.InitializeWorld(); from MainManager start()");
-				SavedGameLoader.InitializeWorld();
-			}
-
-		}
-
-		[HarmonyPostfix]
 		[HarmonyPatch(typeof(ChallengeReminder), nameof(ChallengeReminder.SetString))]
 		private static void ChallengeReminder_SetString_Postfix(ChallengeReminder __instance)
 		{
@@ -368,6 +366,13 @@ namespace NormalGolfArchiProject.Patcher
 				__instance.m_rangeFinder.gameObject.SetActive(false);
 			}
 		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(SaveManager), nameof(SaveManager.SetUpScene))]
+		private static void SaveManager_SetUpScene_Postfix(SaveManager __instance)
+		{
+			SavedGameLoader.InitializeWorld();
+		}
 	}
 
 	//Prevents the dialogue sequence that opens the hole 5 shed door after completing the 'Great Explorer' bounty
@@ -387,4 +392,5 @@ namespace NormalGolfArchiProject.Patcher
 			__instance.m_crossCountryPad.Complete(false);
 		}
 	}
+
 }

@@ -45,8 +45,10 @@ public class Plugin : BaseUnityPlugin
         ArchipelagoConsole.LogMessage($"{ModDisplayInfo} loaded!");
 
 		Harmony.CreateAndPatchAll(typeof(IngamePatcher));
-		Harmony.CreateAndPatchAll(typeof(SaveManager_WriteSave_Prefix));
 		Harmony.CreateAndPatchAll(typeof(SaveManager_LoadStoryRun_Prefix));
+		Harmony.CreateAndPatchAll(typeof(SaveManager_RunSavePath_Postfix));
+		Harmony.CreateAndPatchAll(typeof(SaveManager_RunSavePathBackup_Postfix));
+		Harmony.CreateAndPatchAll(typeof(MainMenu_PlayGame_Prefix));
 		Harmony.CreateAndPatchAll(typeof(BallPhysicsPatcher));
 		Harmony.CreateAndPatchAll(typeof(DialogueManagerPatcher));
 
@@ -132,7 +134,7 @@ public class Plugin : BaseUnityPlugin
 		var playButton = GameObject.Find("Main Menu").GetComponent<MainMenu2>().m_playButton;
 		BepinLogger.LogInfo(playButton.name);
 		//playButton.onClick.RemoveAllListeners();
-		//playButton.onClick.AddListener(SavedGameLoader.LoadArchipelagoData);
+		//playButton.onClick.AddListener();
 		GameObject.Find("Main Menu/MainFrame/PlayButton/Menu Button/LABEL").GetComponent<TextMeshProUGUI>().text = "Play Archipelago";
 
 		SceneManager.sceneLoaded += SavedGameLoader.OnSceneLoaded;

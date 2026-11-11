@@ -4,6 +4,7 @@ using ECM2;
 using ECM2.Walkthrough.Ex42;
 using HarmonyLib;
 using Mono.Cecil.Cil;
+using Newtonsoft.Json;
 using NormalGolfArchiProject;
 using NormalGolfArchiProject.Archipelago;
 using NormalGolfArchiProject.Utils;
@@ -52,6 +53,8 @@ namespace NormalGolfArchiProject.Patcher
 		private static float _timeAnnoyingBirds;
 		private static bool _annoyingBirdsActive = false;
 
+		static Vector3 startingPos = new Vector3(0, 0, 0);
+
 		#region References
 		static List<FPSInteractable> shopItems = new List<FPSInteractable>();
 		static List<FPSInteractable> cashItems = new List<FPSInteractable>();
@@ -99,7 +102,7 @@ namespace NormalGolfArchiProject.Patcher
 			BountyGoal = int.Parse(data["req_bounties_to_win"].ToString());
 		}
 
-		public static void CreateSaveData()
+		public static RunSave CreateSaveData()
 		{
 			Plugin.BepinLogger.LogInfo("===Running CreateSaveData===");
 			SetOptionsValues();
@@ -124,7 +127,7 @@ namespace NormalGolfArchiProject.Patcher
 				"\"m_completedBounties\":[]," +
 				"\"m_savedObjects\":[{\"m_id\":\"bbf1615d-ff17-462b-b829-323d5f2e7371\",\"m_active\":true,\"m_rotation\":{\"x\":0.5608886480331421,\"y\":-0.43053364753723147,\"z\":-0.430385023355484,\"w\":-0.5610823631286621}},{\"m_id\":\"e7cd1c3a-0c07-4dfe-b1d5-c842987f5e15\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.7072302103042603,\"z\":0.7069833874702454,\"w\":0.0}},{\"m_id\":\"ecc7f5b8-a68a-47c5-9d89-a5429bedfcbb\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"2d4ff2cb-2a4f-49a6-8b95-5da8f942c2cf\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"1a435d4a-4a40-4b31-8be4-72675b46e7d7\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"86f908ab-9443-4e0e-bb14-53c551124f40\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"b0a92a0d-a9ba-4663-99ca-8fe44e4536a6\",\"m_active\":true,\"m_rotation\":{\"x\":-0.4999127686023712,\"y\":0.500087320804596,\"z\":0.4999127686023712,\"w\":0.500087320804596}},{\"m_id\":\"1e1ce95a-af64-4fe7-8c20-2b9b433e5a33\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"c71e6c9b-69c5-450e-b638-7e35b7442df5\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"731481d5-1293-4a6e-852b-f60b877ee0e0\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"dbf52ef4-46e8-40dd-8cc1-3d555a7e3a12\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"a097f48f-7d2f-41ae-830e-50332b3c490c\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"2ea98dbe-093f-4520-9d4e-f785f1c9b603\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"8fa76193-93b9-4873-8212-4c1f37a63869\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"3f8d6fb0-eea7-495e-b6a9-2dd71a99781e\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"0fcab7cf-36f7-47c2-a5cb-10c0570d49c5\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"d406fbbd-d5ff-4f43-9ef8-4ce6ba60b76b\",\"m_active\":true,\"m_rotation\":{\"x\":0.3912038207054138,\"y\":0.5890896320343018,\"z\":-0.5888861417770386,\"w\":0.39133885502815249}},{\"m_id\":\"bc623920-c10e-432b-853c-f6ffb8ce35d3\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"2285e26a-e1ea-4915-b5fb-15d30a550ff1\",\"m_active\":true,\"m_rotation\":{\"x\":-0.4676501452922821,\"y\":-0.530380368232727,\"z\":-0.530380368232727,\"w\":0.4676501452922821}},{\"m_id\":\"86a4ee13-2af1-426b-9c91-f5cda46458c3\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"d0919af4-d683-484c-8986-ceb79fd9da85\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"93eed31a-74fe-4ca1-8405-4b0a59f2ee0f\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"324a04dd-2b70-496e-88f0-0a05089f4255\",\"m_active\":true,\"m_rotation\":{\"x\":0.5000000596046448,\"y\":0.4999999701976776,\"z\":-0.5000000596046448,\"w\":0.4999999701976776}},{\"m_id\":\"e9d62ed8-1933-48b8-895a-41ea18ef4ae6\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"c6544730-9924-4e59-b7ff-cab6cdc49995\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"ee4fe86a-0b64-4017-a40d-c385dc5f0511\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"b1600d52-dd29-424a-8a0e-c4529db10dab\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"de52cdbb-ec41-47aa-a6be-d630fd557da9\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"531dfbc0-7bad-4fd0-9c90-bd0f4d6cd930\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"03458e96-9313-4e68-bf4f-bc0fbe3874b2\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"619ce524-015b-4662-a234-10da79cfaa4f\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"ca37522b-e4ab-42cd-a035-4c5aacf78415\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"3fc82e96-8c8a-435c-8d1e-7706022cdf2b\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.7071067094802856,\"z\":-0.7071068286895752,\"w\":0.0}},{\"m_id\":\"01a8023b-a62f-4582-bdf9-9c7029c9a75f\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"1528363c-760f-4a07-ba5f-695e41e95bdd\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"fa6f4baa-9384-4560-8a38-2c0f8776f82b\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"731481d5-1293-4a6e-852b-f60b877ee0e0\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"f5a0374d-699d-402b-8341-9655a50e1e69\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"2fe8ea42-d82d-47ae-8949-14faf1b521b6\",\"m_active\":true,\"m_rotation\":{\"x\":0.560848593711853,\"y\":-0.43056437373161318,\"z\":0.4303542971611023,\"w\":0.5611224174499512}},{\"m_id\":\"d5dd6c85-1cbd-4f6c-8c35-7142b3081cef\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"4c1bb595-b752-4bea-91ab-eda99425ebfe\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"cdb63e1a-920f-4233-8bd0-1356d7484fda\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"f02c67cd-22d1-42fc-af3d-cad5015cea99\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"7f3b4ca9-b80c-4dac-8108-9467c49a09bc\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"03fe7e41-3781-4867-a9f2-865fb7411a02\",\"m_active\":true,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"71cfc2bb-a743-4ccb-be39-68b391f2de05\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}},{\"m_id\":\"c776a3cb-5d94-4c60-8ef9-ce2951991ec8\",\"m_active\":false,\"m_rotation\":{\"x\":0.0,\"y\":0.0,\"z\":0.0,\"w\":0.0}}]," +
 				"\"m_preHitTargets\":[],\"m_canGolf\":true,\"m_golfUnlocked\":true,\"m_spinUnlocked\":true,\"m_aimUnlocked\":true,\"m_stancePanelUnlocked\":true,\"m_windUnlocked\":true," +
-				"\"m_ironUnlocked\":false,\"m_putterUnlocked\":false,\"m_driverUnlocked\":false,\"m_wedgeUnlocked\":false,\"m_hybridUnlocked\":false,\"m_foundFirstCash\":false,\"m_bankBalance\":0,\"m_shots\":0,\"m_time\":0,\"seenBulletproof\":false,\"finishedDemo\":false}";
+				"\"m_ironUnlocked\":false,\"m_putterUnlocked\":false,\"m_driverUnlocked\":false,\"m_wedgeUnlocked\":false,\"m_hybridUnlocked\":false,\"m_foundFirstCash\":false,\"m_bankBalance\":0,\"m_shots\":0,\"m_time\":0,\"seenBulletproof\":false,\"finishedDemo\":true}";
 			#endregion
 
 			//set clubs
@@ -136,7 +139,7 @@ namespace NormalGolfArchiProject.Patcher
 				.Replace("\"m_hybridUnlocked\":false", $"\"m_hybridUnlocked\":{hybrid.ToString().ToLower()}");
 
 			//set player coords based on starting region
-			Vector3 startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
+			startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
 			Vector3 startingViewPos = Vector3.zero;
 
 			StartingRegion = int.Parse(data["starting_region"].ToString());
@@ -169,11 +172,31 @@ namespace NormalGolfArchiProject.Patcher
 
 			Plugin.BepinLogger.LogInfo("Writing save data");
 			File.WriteAllText(Plugin.SavePath, rawSave);
-			Plugin.BepinLogger.LogInfo("Loading scene");
 
-
-			//SceneManager.LoadScene("Main");
 			GameObject.Find("___PLAYER/First Person Character").GetComponent<CharacterMovement>().SetPosition(startingPos);
+
+			RunSave run = new RunSave();
+			run = JsonConvert.DeserializeObject<RunSave>(File.ReadAllText(Plugin.SavePath));
+			run.m_playerPosition = startingPos;
+			run.m_putterUnlocked = putter;
+			run.m_wedgeUnlocked = wedge;
+			run.m_ironUnlocked = iron;
+			run.m_hybridUnlocked = hybrid;
+			run.m_driverUnlocked = driver;
+			run.m_golfUnlocked = true;
+			run.m_canGolf = true;
+			run.m_bankBalance = 0;
+			run.m_challengeSetLoaded = "ML_Ending";
+			run.bountyAccessLevel = 3;
+			run.m_currentChallenge = 0;
+			run.m_completedBounties = new List<string>();
+			run.m_aimUnlocked = true;
+			run.m_crowbarUnlocked = false;
+			run.m_spinUnlocked = true;
+			run.m_stancePanelUnlocked = true;
+			run.m_windUnlocked = true;
+			SaveManager.instance.m_run = run;
+			return run;
 		}
 
 		public static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -181,13 +204,12 @@ namespace NormalGolfArchiProject.Patcher
 			if (scene.name == "Main")
 			{
 				Plugin.BepinLogger.LogInfo("OnSceneLoaded called");
-				//InitializeWorld();
 			}
 		}
 
 		public static void InitializeWorld()
 		{
-			Plugin.BepinLogger.LogInfo("InitializeWorld called");
+			Plugin.BepinLogger.LogInfo("initworld begin");
 
 			SetOptionsValues();
 
@@ -256,6 +278,12 @@ namespace NormalGolfArchiProject.Patcher
 
 			CompletedBounties = SaveManager.instance.m_run.m_completedBounties.Count;
 
+			ChallengeReminder.SetString("init world");
+
+			ProgressManager.instance.m_bank.ChangeBalance(0, halfSound: false, fast: true);
+			PanelManager.instance.m_clubPanel.Unlock(animate: false);
+
+			SaveManager.instance.SaveRun();
 		}
 
 		public static void LockAllBounties()
@@ -341,7 +369,7 @@ namespace NormalGolfArchiProject.Patcher
 			for (int i = 0; i < gatesParent.transform.childCount; i++)
 			{
 				var child = gatesParent.transform.GetChild(i);
-				Plugin.BepinLogger.LogInfo(child.name);
+				//Plugin.BepinLogger.LogInfo(child.name);
 
 				if (child.name == "Hole6Gate")
 				{
@@ -477,9 +505,9 @@ namespace NormalGolfArchiProject.Patcher
 			putter.SetLockedState(StartingClub == 0);
 			putter.Unselect();
 
-			//var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
-			//Plugin.BepinLogger.LogInfo("select club " + selectClub.name);
-			//selectClub.SelectNextClub(true);
+			/*var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
+			Plugin.BepinLogger.LogInfo("select club " + selectClub.name);
+			selectClub.SelectNextClub(true);*/
 		}
 
 		/// <summary>
@@ -717,46 +745,46 @@ namespace NormalGolfArchiProject.Patcher
 			string suffix = "/Board";
 
 			var board1 = GameObject.Find(plyboardParent + "plyboard" + suffix);
-			Plugin.BepinLogger.LogInfo(board1.name);
+			//Plugin.BepinLogger.LogInfo(board1.name);
 			board1.SetActive(true);
 
 			var board2 = GameObject.Find(plyboardParent + "plyboard (2)" + suffix);
-			Plugin.BepinLogger.LogInfo(board2.name);
+			//Plugin.BepinLogger.LogInfo(board2.name);
 			board2.SetActive(true);
 
 			var board3 = GameObject.Find(plyboardParent + "plyboard (5)" + suffix);
-			Plugin.BepinLogger.LogInfo(board3.name);
+			//Plugin.BepinLogger.LogInfo(board3.name);
 			board3.SetActive(true);
 
 			string signsParent = "3D Course/Props/Car Park/Signs/";
 
 			var mu1a = GameObject.Find(signsParent + "MeetUp1/MU1a");
-			Plugin.BepinLogger.LogInfo(mu1a.name);
+			//Plugin.BepinLogger.LogInfo(mu1a.name);
 			mu1a.SetActive(true);
 
 			var mu1b = GameObject.Find(signsParent + "MeetUp1/MU1b");
-			Plugin.BepinLogger.LogInfo(mu1b.name);
+			//Plugin.BepinLogger.LogInfo(mu1b.name);
 			mu1b.SetActive(true);
 
 			var mu2a = GameObject.Find(signsParent + "MeetUp2/MU2a");
-			Plugin.BepinLogger.LogInfo(mu2a.name);
+			//Plugin.BepinLogger.LogInfo(mu2a.name);
 			mu2a.SetActive(true);
 
 			var mu2b = GameObject.Find(signsParent + "MeetUp2/MU2b");
-			Plugin.BepinLogger.LogInfo(mu2b.name);
+			//Plugin.BepinLogger.LogInfo(mu2b.name);
 			mu2b.SetActive(true);
 
 			var con1 = GameObject.Find(signsParent + "Construction/1");
-			Plugin.BepinLogger.LogInfo(con1.name);
+			//Plugin.BepinLogger.LogInfo(con1.name);
 			con1.SetActive(true);
 
 			var con2 = GameObject.Find(signsParent + "Construction/2");
-			Plugin.BepinLogger.LogInfo(con2.name);
+			//Plugin.BepinLogger.LogInfo(con2.name);
 			con2.SetActive(true);
 
 			var board4 = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/plyboard/Board");
 			board4.transform.parent.SetName("plyboard_cashroom");
-			Plugin.BepinLogger.LogInfo(board4.name);
+			//Plugin.BepinLogger.LogInfo(board4.name);
 			board4.SetActive(true);
 		}
 
