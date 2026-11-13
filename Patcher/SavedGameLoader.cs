@@ -1,6 +1,7 @@
 ﻿using Archipelago.MultiClient.Net.Models;
 using BepInEx.Logging;
 using ECM2;
+using ECM2.Examples.FirstPerson;
 using ECM2.Walkthrough.Ex42;
 using HarmonyLib;
 using Mono.Cecil.Cil;
@@ -54,6 +55,11 @@ namespace NormalGolfArchiProject.Patcher
 		private static bool _annoyingBirdsActive = false;
 
 		static Vector3 startingPos = new Vector3(0, 0, 0);
+		static bool putter = StartingClub == 0;
+		static bool wedge = StartingClub == 1;
+		static bool iron = StartingClub == 2;
+		static bool hybrid = StartingClub == 3;
+		static bool driver = StartingClub == 4;
 
 		#region References
 		static List<FPSInteractable> shopItems = new List<FPSInteractable>();
@@ -100,6 +106,38 @@ namespace NormalGolfArchiProject.Patcher
 			var data = ArchipelagoClient.ServerData.SlotData;
 			StartingClub = int.Parse(data["starting_club"].ToString());
 			BountyGoal = int.Parse(data["req_bounties_to_win"].ToString());
+			StartingRegion = int.Parse(data["starting_region"].ToString());
+			switch (StartingRegion)
+			{
+				case 0:
+					startingPos = new Vector3(69.551f, 5.2834f, -367.2121f);
+					break;
+				case 1:
+					startingPos = new Vector3(48.1098f, 4.7228f, -318.9951f);
+					break;
+				case 4:
+					startingPos = new Vector3(23.85f, 8.0577f, -221.059f);
+					break;
+				case 5:
+					startingPos = new Vector3(322.9053f, 44.9822f, -343.5749f);
+					break;
+				case 6:
+					startingPos = new Vector3(-221.8353f, 8.9257f, -574.2776f);
+					break;
+				case 666:
+					startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
+					break;
+				default:
+					startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
+					Plugin.BepinLogger.LogError("StartingPos never set!");
+					break;
+			}
+
+			putter = StartingClub == 0;
+			wedge = StartingClub == 1;
+			iron = StartingClub == 2;
+			hybrid = StartingClub == 3;
+			driver = StartingClub == 4;
 		}
 
 		public static RunSave CreateSaveData()
@@ -108,12 +146,11 @@ namespace NormalGolfArchiProject.Patcher
 			SetOptionsValues();
 			var data = ArchipelagoClient.ServerData.SlotData;
 
-			//todo, set new runsavepath
-			bool putter = StartingClub == 0;
+			/*bool putter = StartingClub == 0;
 			bool wedge = StartingClub == 1;
 			bool iron = StartingClub == 2;
 			bool hybrid = StartingClub == 3;
-			bool driver = StartingClub == 4;
+			bool driver = StartingClub == 4;*/
 			iron = true;	//i couldn't figure out how to get the clubs panel working if i load the save without the iron. i just disable the iron later
 			Plugin.BepinLogger.LogInfo("Starting club is " + StartingClub);
 
@@ -138,33 +175,10 @@ namespace NormalGolfArchiProject.Patcher
 				.Replace("\"m_wedgeUnlocked\":false", $"\"m_wedgeUnlocked\":{wedge.ToString().ToLower()}")
 				.Replace("\"m_hybridUnlocked\":false", $"\"m_hybridUnlocked\":{hybrid.ToString().ToLower()}");
 
-			//set player coords based on starting region
-			startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
-			Vector3 startingViewPos = Vector3.zero;
 
 			StartingRegion = int.Parse(data["starting_region"].ToString());
 			Plugin.BepinLogger.LogInfo("Starting Region is: " + StartingRegion);
-			switch (StartingRegion)
-			{
-				case 0:
-					startingPos = new Vector3(69.551f, 5.2834f, -367.2121f);
-					break;
-				case 1:
-					startingPos = new Vector3(48.1098f, 4.7228f, -318.9951f);
-					break;
-				case 4:
-					startingPos = new Vector3(23.85f, 8.0577f, -221.059f);
-					break;
-				case 5:
-					startingPos = new Vector3(322.9053f, 44.9822f, -343.5749f);
-					break;
-				case 6:
-					startingPos = new Vector3(-221.8353f, 8.9257f, -574.2776f);
-					break;
-				case 666:
-					startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
-					break;
-			}
+			
 
 			rawSave = rawSave.Replace(	"\"m_playerPosition\":{\"x\":103.63618469238281,\"y\":2.8397185802459719,\"z\":-184.50772094726563}",
 										$"\"m_playerPosition\":{{\"x\":{startingPos.x},\"y\":{startingPos.y},\"z\":{startingPos.z}}}");
@@ -190,12 +204,24 @@ namespace NormalGolfArchiProject.Patcher
 			run.bountyAccessLevel = 3;
 			run.m_currentChallenge = 0;
 			run.m_completedBounties = new List<string>();
+			run.m_doNotReloadChallengeList = new List<string>() { "BO_MultihitTutorial", "TeleDialogue" };
 			run.m_aimUnlocked = true;
 			run.m_crowbarUnlocked = false;
 			run.m_spinUnlocked = true;
 			run.m_stancePanelUnlocked = true;
 			run.m_windUnlocked = true;
+
+			if (SaveManager.instance.m_run.m_challengeSetLoaded != "")
+			{
+				ChallengeSet challengeSet = UnityEngine.Object.Instantiate(GreatConnector.instance.GetChallengeSet(SaveManager.instance.m_run.m_challengeSetLoaded));
+				challengeSet.m_appearDelay = 0.5f;
+				ChallengeSystem.instance.LoadNewChallengeSet(challengeSet, SaveManager.instance.m_run.m_currentChallenge);
+				ChallengeSystem.instance.UpdateProgressBarForSave();
+			}
+
 			SaveManager.instance.m_run = run;
+			ProgressManager.instance.m_bank.m_balance = SaveManager.instance.m_run.m_bankBalance;
+			ProgressManager.instance.m_bank.UpdateVisuals();
 			return run;
 		}
 
@@ -207,11 +233,93 @@ namespace NormalGolfArchiProject.Patcher
 			}
 		}
 
+		//This is a frankenstein'd version of SetUpScene
 		public static void InitializeWorld()
 		{
+			Plugin.BepinLogger.LogInfo("setupscene in initworld");
+			SaveManager.instance.SetUpScene();
 			Plugin.BepinLogger.LogInfo("initworld begin");
-
+			
 			SetOptionsValues();
+			Plugin.BepinLogger.LogInfo("startingpos: " + startingPos);
+			RunSave run = new RunSave();
+			run = JsonConvert.DeserializeObject<RunSave>(File.ReadAllText(Plugin.SavePath));
+			Plugin.BepinLogger.LogInfo("run.m_playerPosition: " + run.m_playerPosition);
+			if (run.m_playerPosition.y <= 0f)
+			{
+				run.m_playerPosition = startingPos;
+				Plugin.BepinLogger.LogWarning("run.m_playerPosition Y was <= 0!");
+			}
+
+			run.m_golfUnlocked = true;
+			run.m_canGolf = true;
+			run.m_challengeSetLoaded = "ML_Ending";
+			run.m_currentChallenge = 0;
+			run.bountyAccessLevel = 3;
+
+			PanelManager.instance.m_clubPanel.Unlock(animate: false);
+
+			run.m_aimUnlocked = true;
+			ProgressManager.instance.UnlockAdjust(showPFX: false);
+
+			run.m_crowbarUnlocked = false;
+
+			run.m_spinUnlocked = true;
+			PanelManager.instance.m_spinPanel.Unlock(animate: false);
+
+			run.m_stancePanelUnlocked = true;
+			ProgressManager.instance.UnlockStance(showPFX: false);
+
+			run.m_windUnlocked = true;
+			PanelManager.instance.m_windPanel.StartWind(showPfx: false);
+
+			SaveManager.instance.m_run = run;
+
+
+			SaveableObject[] array = UnityEngine.Object.FindObjectsByType<SaveableObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+			foreach (SaveableObject saveableObject in array)
+			{
+				SavedObjectData[] savedObjects = SaveManager.instance.m_run.m_savedObjects;
+				foreach (SavedObjectData savedObjectData in savedObjects)
+				{
+					if (saveableObject.GetSaveData().m_id == savedObjectData.m_id)
+					{
+						if (saveableObject.GetSaveData().m_id == "731481d5-1293-4a6e-852b-f60b877ee0e0")
+						{
+							Debug.Log("FOUND RED TEE!!! setting active to " + savedObjectData.m_active);
+						}
+						saveableObject.gameObject.SetActive(savedObjectData.m_active);
+						if (saveableObject.m_saveRotation)
+						{
+							saveableObject.transform.rotation = savedObjectData.m_rotation;
+						}
+					}
+				}
+			}
+
+
+			ChallengeSystem.instance.m_preBrokenShots.Clear();
+			string[] preHitTargets = SaveManager.instance.m_run.m_preHitTargets;
+			foreach (string item in preHitTargets)
+			{
+				ChallengeSystem.instance.m_preBrokenShots.Add(item);
+			}
+
+			if (SaveManager.instance.m_run.m_challengeSetLoaded != "")
+			{
+				ChallengeSet challengeSet = UnityEngine.Object.Instantiate(GreatConnector.instance.GetChallengeSet(SaveManager.instance.m_run.m_challengeSetLoaded));
+				challengeSet.m_appearDelay = 0.5f;
+				ChallengeSystem.instance.LoadNewChallengeSet(challengeSet, SaveManager.instance.m_run.m_currentChallenge);
+				ChallengeSystem.instance.UpdateProgressBarForSave();
+			}
+			ChallengeSystem.instance.ToggleOffPreviousChallengeObjects();
+
+			ProgressManager.instance.m_bank.m_balance = SaveManager.instance.m_run.m_bankBalance;
+			ProgressManager.instance.m_bank.UpdateVisuals();
+
+			MoveAndHitController.instance.m_FPSController.GetComponent<FirstPersonCharacter>().SetPosition(startingPos);
+
+			SaveManager.instance.SaveRun();
 
 			LockAllBounties();
 			CloseAllGates();

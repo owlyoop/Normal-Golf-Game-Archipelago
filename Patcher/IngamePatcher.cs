@@ -371,7 +371,7 @@ namespace NormalGolfArchiProject.Patcher
 		[HarmonyPatch(typeof(SaveManager), nameof(SaveManager.SetUpScene))]
 		private static void SaveManager_SetUpScene_Postfix(SaveManager __instance)
 		{
-			SavedGameLoader.InitializeWorld();
+			//SavedGameLoader.InitializeWorld();
 		}
 	}
 

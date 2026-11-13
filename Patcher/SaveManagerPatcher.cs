@@ -75,12 +75,16 @@ namespace NormalGolfArchiProject.Patcher
 					__instance.m_run.m_bankBalance = 0;
 
 				if (SceneManager.GetActiveScene().name == "Main")
-					__instance.SetUpScene();
+				{
+					Plugin.BepinLogger.LogInfo("Calling InitializeWorld from LoadStoryRun Prefix");
+					SavedGameLoader.InitializeWorld();
+				}
+					
 
 				__result = __instance.m_run;
 				return false;
 			}
-			
+			Plugin.BepinLogger.LogInfo("LoadStoryRun Prefix not called because not connected to archi");
 			return true;
 		}
 	}

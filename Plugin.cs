@@ -272,10 +272,10 @@ public class Plugin : BaseUnityPlugin
 
 			case 1009:  //holes 2-5 <-> holes 6-9
 				Plugin.BepinLogger.LogInfo("Opening Hole 6 Gate");
-				var hole6Gate1 = GameObject.Find("3D Course/Props/GATES/Hole6Gate/gate1_LOD0").transform;
+				var hole6Gate1 = GameObject.Find("3D Course/Props/GATES/Hole6Gate/gate1_LOD0 (2)").transform;
 				hole6Gate1.localRotation = Quaternion.Euler(hole6Gate1.eulerAngles.x, 75f, hole6Gate1.eulerAngles.z);
 
-				var hole6Gate2 = GameObject.Find("3D Course/Props/GATES/Hole6Gate/gate2_LOD0").transform;
+				var hole6Gate2 = GameObject.Find("3D Course/Props/GATES/Hole6Gate/gate2_LOD0 (2)").transform;
 				hole6Gate2.localRotation = Quaternion.Euler(hole6Gate2.eulerAngles.x, 285f, hole6Gate2.eulerAngles.z);
 				break;
 
