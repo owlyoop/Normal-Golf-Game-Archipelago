@@ -1,7 +1,7 @@
 # Backup your saves before using this mod! There is a risk of your save files being overwritten.
 > C:\Users\[YOUR USERNAME]\AppData\LocalLow\Luke Muscat\Normal Golf Game
 
-I tried to make it so it loads & saves the files in Normal Golf Game\Archipelago, but there are no guarantees it works.  
+I tried to make it so it loads & saves the files in Normal Golf Game\AP_###, but there are no guarantees it works.  
 
 ## **This is a very early version of an Archipelago randomizer mod for Normal Golf Game**
 
@@ -20,7 +20,8 @@ Currently the only objective is to complete X amount of bounties. There are plan
 - Purchasing shop items
 - Golf holes
 - Stray cash lying around
-- Breakable signs
+- Breakable signs and statue blocks
+- Some of the steam achievements (just the goals, does not matter if you actually unlock them in steam or not)
 
 Bounties are considered "in logic" if the player has any of the required clubs. For example, most of the bounties are impossible to complete with just a putter. 
 I created a document from my testing of what the 'minimum' required club to complete each bounty. This is based off of the assumption that if a bounty can be completed with a Wedge, it can be completed with an Iron, Hybrid, or Driver.  
@@ -32,17 +33,24 @@ However, all of this is trivial to edit in game_data.py
 ### Currently implemented items:  
 - Any of the 5 clubs  
 - Unlocking all bounties of a specific difficulty  
-- Unlocking gates/teleporter shed doors/pro shop door  
+- Unlocking gates/teleporter shed doors/pro shop door
+- Unlocking practice mode
+- Rangefinder
+- Crouching putter-vision
 
 ### Currently implemented filler items:
 - Filler 50$
 - Music pitch down
 - Music pitch up
+- Music pitch normal
+- Increase spring speed
 
 ### Currently implemented trap items:
 - Temporary low friction for green or fairway surfaces
 - Temporary extra bounciness for green or fairway surfaces
 - Temporary Turbo boost fairway
+- Temporarily make putt-putt walls behave like pinball bumpers
+- Annoying bird sounds
 - Evil kookaburra
 
 ## Installation
@@ -53,7 +61,9 @@ However, all of this is trivial to edit in game_data.py
 - The path should look like ```\steamapps\common\Normal Golf Game\Normal\BepInEx\plugins\NormalGolfArchiProject``` and "NormalGolfArchiProject" should contain three dll files
 
 
-### Known issues:  
+### Known issues:
+* This mod may not correctly initialize starting cash/region/clubs/game state for many players. If this happens please let me know in the archipelago discord
+* Receiving a spring speed item does not automatically update sprint speed if the "toggle sprint" option is enabled. Simply pressing the sprint button to briefly enter walk mode fixes this
 * Bounties don't get locked if they are impossible to complete with the player's currently unlocked clubs.   
 * Bounties are accessed by the sibling index in the !!!Bounties gameobject, this will certainly break if the game gets updated or if other mods mess with the bounty ordering.
 * Locked bounties still have arrows pointing at other bounties, this is purely visual and should not be actually locking the bounties
