@@ -64,6 +64,12 @@ class GreatExplorerAllowPutterInLogic(Toggle):
     """Whether the 'Great Explorer' bounty should be considered in logic if the player's only club is a putter (Hole 2 fairway to Hole 5 MultiHit bounty). Easy but very tedious"""
     display_name = "Allow putter in logic for 'Great Explorer' bounty"
 
+class PhysicsTrapDuration(Range):
+    """How long in seconds physics traps last for"""
+    range_start = 1
+    range_end = 300
+    default = 60
+    display_name = "Physics traps duration (seconds)"
 
 class GolfHoleChecks(DefaultOnToggle):
     """Enables getting the ball into golf holes as locations"""
@@ -95,7 +101,7 @@ class BreakableStatuesFrontYardInLogic(Toggle):
 
 class AchievementChecks(DefaultOnToggle):
     """Enable some achievements as checks"""
-    display_name = "Enable AchievementSanity"
+    display_name = "Enable achievement checks"
 
 class AchievementChecksEnableHoleInOne(Toggle):
     """Enable the hole-in-one achievement for achievement checks. Does nothing if achievement checks are disabled"""
@@ -117,6 +123,7 @@ class APNormalGolfGameOptions(PerGameCommonOptions):
     shop_locations_never_filler: MarkImportantShopLocationsAsPriority
     putting_drills_req_putter: PuttingDrillBountiesRequirePutter
     great_explorer_allow_putter_logic: GreatExplorerAllowPutterInLogic
+    physics_traps_duration: PhysicsTrapDuration
     hole_checks_enabled: GolfHoleChecks
     hole_checks_enable_mini_island_holes: GolfHoleChecksEnableMiniIslands
     hole_checks_enable_secret_greens: GolfHoleChecksEnableSecretGreens

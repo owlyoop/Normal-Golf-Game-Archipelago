@@ -112,7 +112,7 @@ class APNormalGolfWorld(World):
     def fill_slot_data(self) -> Mapping[str, Any]:
         slot_data =  self.options.as_dict(
             "req_bounties_to_win", "starting_club", "starting_region", "num_starting_difficulties",
-            "shop_locations_never_filler", "putting_drills_req_putter", "great_explorer_allow_putter_logic",
+            "shop_locations_never_filler", "putting_drills_req_putter", "great_explorer_allow_putter_logic", "physics_traps_duration",
             "hole_checks_enabled", "hole_checks_enable_mini_island_holes", "hole_checks_enable_secret_greens",
             "breakable_checks_enabled", "breakable_checks_statues_enabled", "breakable_checks_statues_frontyard",
             "achievement_checks_enabled", "achievement_checks_hole_in_one_enabled", "achievement_checks_albatross_hole6_enabled")

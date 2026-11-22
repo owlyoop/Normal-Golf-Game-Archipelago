@@ -103,6 +103,7 @@ namespace NormalGolfArchiProject.Patcher
 
 		public void Update()
 		{
+			if (MoveAndHitController.instance.m_mode != ControlMode.Golf) return;
 			time -= Time.deltaTime;
 			if (time <= 0f)
 			{
@@ -178,8 +179,9 @@ namespace NormalGolfArchiProject.Patcher
 			foreach (var trap in traps)
 			{
 				if (!trap.IsActive) continue;
+				
 				trap.Update();
-
+				
 				switch (trap.surface)
 				{
 					case GolfSurface.Green:
@@ -231,25 +233,33 @@ namespace NormalGolfArchiProject.Patcher
 				_fairwayDirty = false;
 			}
 
-			_timeAccelFairway -= Time.deltaTime;
-			_timeBumperPuttWalls -= Time.deltaTime;
+			if (MoveAndHitController.instance.m_mode == ControlMode.Golf)
+			{
+				_timeAccelFairway -= Time.deltaTime;
+				_timeBumperPuttWalls -= Time.deltaTime;
+			}
 
 			//physics traps that arent simple attribute changes
 			if (_timeAccelFairway <= 0f)
 			{
 				_timeAccelFairway = 0f;
 				IsAcceleratedFairway = false;
+				AcceleratedFairwayText.gameObject.SetActive(false);
 			}
 			if (_timeBumperPuttWalls <= 0f)
 			{
 				_timeBumperPuttWalls = 0f;
 				IsBumperPuttWalls = false;
-				_greenDirty = false;
+				BumperPuttText.gameObject.SetActive(false);
 			}
 
 			if (IsAcceleratedFairway)
 			{
-
+				AcceleratedFairwayText.SetText("Accelerated Fairway: " + Mathf.RoundToInt(_timeAccelFairway));
+			}
+			if (IsBumperPuttWalls)
+			{
+				BumperPuttText.SetText("PuttPutt Bumpers: " + Mathf.RoundToInt(_timeBumperPuttWalls));
 			}
 		}
 

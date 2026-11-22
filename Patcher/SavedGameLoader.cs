@@ -62,6 +62,8 @@ namespace NormalGolfArchiProject.Patcher
 		static bool driver = StartingClub == 4;
 
 		#region Options
+		public static float PhysicsTrapDuration;
+
 		public static bool HoleChecksEnabled;
 		public static bool HoleChecksMiniIslands;
 		public static bool HoleChecksSecretGreens;
@@ -129,6 +131,8 @@ namespace NormalGolfArchiProject.Patcher
 
 			Plugin.BepinLogger.LogInfo("Starting region is: " + StartingRegion);
 
+			PhysicsTrapDuration = float.Parse(data["physics_traps_duration"].ToString());
+
 			HoleChecksEnabled = int.Parse(data["hole_checks_enabled"].ToString()) != 0;
 			HoleChecksMiniIslands = int.Parse(data["hole_checks_enable_mini_island_holes"].ToString()) != 0;
 			HoleChecksSecretGreens = int.Parse(data["hole_checks_enable_secret_greens"].ToString()) != 0;
@@ -173,16 +177,8 @@ namespace NormalGolfArchiProject.Patcher
 			SetOptionsValues();
 			var data = ArchipelagoClient.ServerData.SlotData;
 
-			/*bool putter = StartingClub == 0;
-			bool wedge = StartingClub == 1;
-			bool iron = StartingClub == 2;
-			bool hybrid = StartingClub == 3;
-			bool driver = StartingClub == 4;*/
-			//iron = true;	//i couldn't figure out how to get the clubs panel working if i load the save without the iron. i just disable the iron later
 			Plugin.BepinLogger.LogInfo("Starting club is " + StartingClub);
 
-
-			
 			//This was copied from the DebugLoadSave func from ILSpy. There's probably a more elegant way to handle saves.
 			#region savefile
 			string rawSave = "{\"m_playerPosition\":{\"x\":103.63618469238281,\"y\":2.8397185802459719,\"z\":-184.50772094726563}," +
@@ -250,6 +246,8 @@ namespace NormalGolfArchiProject.Patcher
 			ProgressManager.instance.m_bank.m_balance = SaveManager.instance.m_run.m_bankBalance;
 			ProgressManager.instance.m_bank.UpdateVisuals();
 			SetChallengeToMLEnding();
+			Plugin.BepinLogger.LogInfo("Balance at end of CreateSaveData: " + SaveManager.instance.m_run.m_bankBalance);
+			Plugin.BepinLogger.LogInfo("ProgressManager.instance.m_bank.m_balance: " + ProgressManager.instance.m_bank.m_balance);
 			return run;
 		}
 
@@ -363,16 +361,16 @@ namespace NormalGolfArchiProject.Patcher
 
 			SaveManager.instance.SaveRun();
 
-			Plugin.BepinLogger.LogInfo("LockAllBounties");
+			Plugin.BepinLogger.LogInfo("InitializeWorld LockAllBounties");
 			LockAllBounties();
 			CloseAllGates();
 			CloseAllProShopDoors();
 			CloseAllShedDoors();
-			Plugin.BepinLogger.LogInfo("SetupProShop");
+			Plugin.BepinLogger.LogInfo("InitializeWorld SetupProShop");
 			SetupProShop();
 			SetupAllStrayCash();
 			SetupBreakables();
-			Plugin.BepinLogger.LogInfo("SetClubs");
+			Plugin.BepinLogger.LogInfo("InitializeWorld SetClubs");
 			SetClubs();
 			RemoveCashRewards();
 			PreparePhysicsMaterials();
@@ -388,7 +386,7 @@ namespace NormalGolfArchiProject.Patcher
 				if (id >= 2 && id <= 9) Plugin.ReceiveMiscItem(id);
 				else if (id >= 600 && id <= 608) Plugin.ReceiveDifficultyUnlockItem(id);
 				else if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
-				else if (id == 3004) IncreaseSprintSpeed(1f);
+				//else if (id == 3004) IncreaseSprintSpeed(1f);
 			}
 
 
@@ -412,7 +410,7 @@ namespace NormalGolfArchiProject.Patcher
 				int id = (int)i.m_interaction;
 				if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(id))
 				{
-					i.m_topOfObject.SetActive(false);
+					i.m_topOfObject?.SetActive(false);
 				}
 			}
 			Plugin.BepinLogger.LogInfo("cashItems");
@@ -424,15 +422,14 @@ namespace NormalGolfArchiProject.Patcher
 					i.m_topOfObject?.SetActive(false);
 				}
 			}
-			Plugin.BepinLogger.LogInfo("GreenTeeLong");
-			GameObject.Find("3D Course/TEES/GreenTeeLong").gameObject.SetActive(false);
+			GameObject.Find("3D Course/TEES/GreenTeeLong")?.gameObject.SetActive(false);
 
 			hasOpenedClubPanel = false;
 
 			CompletedBounties = SaveManager.instance.m_run.m_completedBounties.Count;
 
 			ProgressManager.instance.m_bank.ChangeBalance(0, halfSound: false, fast: true);
-			Plugin.BepinLogger.LogInfo("panelmanager unlock clubs");
+			Plugin.BepinLogger.LogInfo("InitializeWorld panelmanager unlock clubs");
 			PanelManager.instance.m_clubPanel.Unlock(animate: false);
 
 			SaveManager.instance.SaveRun();

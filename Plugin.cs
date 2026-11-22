@@ -21,7 +21,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGUID = "com.yourName.projectName";
     public const string PluginName = "NormalGolfArchiProject";
-    public const string PluginVersion = "0.0.1";
+    public const string PluginVersion = "1.4.00";
 
     public const string ModDisplayInfo = $"{PluginName} v{PluginVersion}";
     private const string APDisplayInfo = $"Archipelago v{ArchipelagoClient.APVersion}";
@@ -509,23 +509,23 @@ public class Plugin : BaseUnityPlugin
 		switch (id)
 		{
 			case 4000: //icy green
-				BallPhysicsTraps.ActivateIcyGreen(60f);
+				BallPhysicsTraps.ActivateIcyGreen(SavedGameLoader.PhysicsTrapDuration);
 				break;
 
 			case 4001: //icy fairway
-				BallPhysicsTraps.ActivateIcyFairway(60f);
+				BallPhysicsTraps.ActivateIcyFairway(SavedGameLoader.PhysicsTrapDuration);
 				break;
 
 			case 4002: //bouncy fairway
-				BallPhysicsTraps.ActivateBouncyGreen(60f);
+				BallPhysicsTraps.ActivateBouncyGreen(SavedGameLoader.PhysicsTrapDuration);
 				break;
 
 			case 4003: //bouncy fairway
-				BallPhysicsTraps.ActivateBouncyFairway(60f);
+				BallPhysicsTraps.ActivateBouncyFairway(SavedGameLoader.PhysicsTrapDuration);
 				break;
 
 			case 4004: //accelerated fairway
-				BallPhysicsTraps.ActivateAcceleratedFairwayTrap(60f);
+				BallPhysicsTraps.ActivateAcceleratedFairwayTrap(SavedGameLoader.PhysicsTrapDuration);
 				break;
 
 			case 4005: //evil kookaburra
@@ -537,7 +537,7 @@ public class Plugin : BaseUnityPlugin
 				break;
 
 			case 4007:
-				BallPhysicsTraps.ActivatePuttPuttBumpersTrap(60f);
+				BallPhysicsTraps.ActivatePuttPuttBumpersTrap(SavedGameLoader.PhysicsTrapDuration);
 				break;
 		}
 	}

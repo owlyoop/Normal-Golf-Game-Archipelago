@@ -57,6 +57,7 @@ namespace NormalGolfArchiProject.Patcher
 
 			text.alignment = TextAlignmentOptions.Left;
 			text.color = yellow;
+			text.GetComponent<RectTransform>().offsetMax = new Vector2(300f, text.GetComponent<RectTransform>().offsetMax.y);
 			text.SetText("Physics Trap Name");
 			textPrefab = text;
 			text.gameObject.SetActive(false);
