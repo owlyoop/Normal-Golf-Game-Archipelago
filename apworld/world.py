@@ -29,10 +29,11 @@ class APNormalGolfWorld(World):
     options: normalgolfgame_options.APNormalGolfGameOptions
 
     number_of_bounties = 0
-
-
+    clubs = ["Putter", "Wedge", "Iron", "Hybrid", "Driver"]
+    #starting_club = clubs[normalgolfgame_options.APNormalGolfGameOptions.starting_club.value]
+    #club_index = normalgolfgame_options.APNormalGolfGameOptions.starting_club.value + 1
     def generate_early(self) -> None:
-        clubs = ["Putter", "Wedge", "Iron", "Hybrid", "Driver"]
+
         starting_regions = {
             0: "Car Park",
             1: "Front Yard",
@@ -40,12 +41,13 @@ class APNormalGolfWorld(World):
             5: "Holes 2-5",
             6: "Holes 6-9",
         }
-        club_index = self.options.starting_club.value + 1
 
-        starting_club = clubs[self.options.starting_club.value]
+
+        starting_club = self.clubs[self.options.starting_club.value]
         self.origin_region_name = starting_regions[self.options.starting_region.value]
 
         region_clubs = REGIONS_CLUBS_DIFFICULTIES.get(self.origin_region_name, {})
+        club_index = self.options.starting_club.value + 1
         valid_difficulties = region_clubs.get(club_index, [])
 
 
@@ -109,7 +111,11 @@ class APNormalGolfWorld(World):
 
     def fill_slot_data(self) -> Mapping[str, Any]:
         slot_data =  self.options.as_dict(
-            "req_bounties_to_win", "starting_club", "starting_region", "num_starting_difficulties")
+            "req_bounties_to_win", "starting_club", "starting_region", "num_starting_difficulties",
+            "shop_locations_never_filler", "putting_drills_req_putter", "great_explorer_allow_putter_logic",
+            "hole_checks_enabled", "hole_checks_enable_mini_island_holes", "hole_checks_enable_secret_greens",
+            "breakable_checks_enabled", "breakable_checks_statues_enabled", "breakable_checks_statues_frontyard",
+            "achievement_checks_enabled", "achievement_checks_hole_in_one_enabled", "achievement_checks_albatross_hole6_enabled")
 
         ids: list[int] = []
         for i in self.starting_difficulties:

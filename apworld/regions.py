@@ -22,7 +22,9 @@ class Regions:
     ProShop_Upstairs_CashRoom = "Upstairs Cash Room"
     ProShop_Upstairs_SimulatorRoom = "Upstairs Simulator Room"
     ProShop_Upstairs_LockRoom = "Upstairs Padlock Room"
+    ProShop_Bathroom = "Teleporter #1B Bathroom"
     Green_Screen_Building = "Green Screen Building"
+    Green_Screen_Building_Closet = "Green Screen Building Closet"
 
 
 # A region is a container for locations ("checks"), which connects to other regions via "Entrance" objects.
@@ -67,6 +69,7 @@ def create_all_regions(world: APNormalGolfWorld) -> None:
     simulator_room = Region(Regions.ProShop_Upstairs_SimulatorRoom, world.player, world.multiworld)
     lock_room = Region(Regions.ProShop_Upstairs_LockRoom, world.player, world.multiworld)
     greenscreen_bldg = Region(Regions.Green_Screen_Building, world.player, world.multiworld)
+    greenscreen_bldg_closet = Region(Regions.Green_Screen_Building_Closet, world.player, world.multiworld);
 
     # Let's put all these regions in a list.
     regions = [car_park, front_yard, pro_shop, pro_shop_upstairs, hole_1_area, holes_2_to_5, holes_6_to_9,
@@ -74,7 +77,7 @@ def create_all_regions(world: APNormalGolfWorld) -> None:
                teleporter_2b_shed, teleporter_2a_shed,
                teleporter_3a_shed, lake_area,
                mountaintop,
-               lukes_office, cash_room, simulator_room, lock_room, greenscreen_bldg]
+               lukes_office, cash_room, simulator_room, lock_room, greenscreen_bldg, greenscreen_bldg_closet]
 
     # Some regions may only exist if the player enables certain options.
 
@@ -112,6 +115,7 @@ def connect_regions(world: APNormalGolfWorld) -> None:
     lock_room = world.get_region(Regions.ProShop_Upstairs_LockRoom)
     simulator_room = world.get_region(Regions.ProShop_Upstairs_SimulatorRoom)
     greenscreen_building = world.get_region(Regions.Green_Screen_Building)
+    greenscreen_building_closet = world.get_region(Regions.Green_Screen_Building_Closet)
 
     #car park connections
     car_park.connect(front_yard, "Car Park to Front Yard",
@@ -213,7 +217,15 @@ def connect_regions(world: APNormalGolfWorld) -> None:
     greenscreen_building.connect(holes_6_to_9, "Green Screen Building to Holes 6-9",
                          lambda state: state.has("Unlock Green Screen Building", world.player))
 
-    #Pro Shop Updatris connections
+
+    #Green screen building
+    greenscreen_building.connect(greenscreen_building_closet, "Green Screen Building to Closet",
+                                 lambda state: state.has("Unlock Closet in Green Screen Building", world.player))
+    greenscreen_building_closet.connect(greenscreen_building, "Closet to Green Screen Building",
+                                 lambda state: state.has("Unlock Closet in Green Screen Building", world.player))
+
+
+    #Pro Shop Upstairs connections
     pro_shop_upstairs.connect(lukes_office, "Upstairs to Luke's Office",
                               lambda state: state.has("Unlock Luke's Office Door", world.player))
     lukes_office.connect(pro_shop_upstairs, "Luke's Office to Upstairs",

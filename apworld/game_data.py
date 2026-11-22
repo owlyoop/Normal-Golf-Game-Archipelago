@@ -13,7 +13,12 @@ ID_OFFSET_ITEM_TRAP = 4000
 ID_OFFSET_LOCATION_SHOP = 50000
 ID_OFFSET_LOCATION_STRAY_CASH = 60000
 ID_OFFSET_LOCATION_GOLFHOLE = 70000
+ID_OFFSET_LOCATION_GOLFHOLE_SECRETGREEN = 70100
 ID_OFFSET_LOCATION_BREAKABLE = 71000
+ID_OFFSET_LOCATION_BREAKABLE_STATUE = 72000
+ID_OFFSET_ACHIEVEMENT = 73000
+ID_OFFSET_COMPLETION = 74000
+
 
 class GolfClubs(IntEnum):
     Putter = 1
@@ -47,7 +52,7 @@ DIFFICULTY_CASH: dict[Difficulty, int] = {
 }
 
 #region : Club , list of difficulties
-#i hope this is helpful in making sure random starting region/club/difficulties wont cause world generation errors
+#makes sure random starting region/club/difficulties wont cause world generation errors
 REGIONS_CLUBS_DIFFICULTIES: dict[str, dict[int, list[int]]] = {
     Regions.CarPark : {1 : [],
                        2 : [],
@@ -131,9 +136,6 @@ class Breakable(TypedDict):
 TOTAL_COST_OF_ALL_SHOP = 12100
 TOTAL_COST_OF_SHOP_CLUBS = 3450
 
-#todo: put all the id offsets in one place. very sloppy
-# 500XX for shop items
-#todo: make the 4 clubs and the ticket guranteed to be non-cash progression items? idk
 shop_data: dict[str, ShopItem] = {
     "Pro Shop Buy Putter" : {"id": ID_OFFSET_LOCATION_SHOP, "cost": 200, "region": Regions.ProShop},
     "Pro Shop Buy Wedge" : {"id": ID_OFFSET_LOCATION_SHOP + 1, "cost":1500, "region": Regions.ProShop},
@@ -175,6 +177,7 @@ stray_cash_data: dict[str, StrayCashItem] = {
     "Stray Cash (Teleporter Shed #3)" : {"id": ID_OFFSET_LOCATION_STRAY_CASH + 13, "region": "Teleporter #3A Shed"},
     "Lost Golf Ball" : {"id" : ID_OFFSET_LOCATION_STRAY_CASH + 14, "region": Regions.ProShop_Upstairs},
     "Unlock Bunker Button": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 15, "region": Regions.Lukes_Office},
+    "Green Screen Building Closet Button": {"id": ID_OFFSET_LOCATION_STRAY_CASH + 16, "region": Regions.Green_Screen_Building_Closet}
 }
 
 upstairs_cash_data: dict[str, StrayCashItem] = {
@@ -224,9 +227,6 @@ golfhole_data: dict[str, GolfHole] = {
     "Hole #7 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 6, "region": Regions.Holes_6_to_9},
     "Hole #8 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 7, "region": Regions.Holes_6_to_9},
     "Hole #9 hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 8, "region": Regions.Holes_6_to_9},
-    "Mini Island Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 9, "region": Regions.FrontYard},
-    "Mini Island Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 10, "region": Regions.Holes_2_to_5},
-    "Mini Island Hole #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 11, "region": Regions.Holes_6_to_9},
     "Big Bunker Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 12, "region": Regions.Holes_2_to_5},
     "Practice Green Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 13, "region": Regions.Hole_1_Area},
     "Practice Green Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 14, "region": Regions.Hole_1_Area},
@@ -248,6 +248,17 @@ golfhole_data: dict[str, GolfHole] = {
     "No Cheese Chip Middle Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 30, "region": Regions.Holes_6_to_9},
     "No Cheese Chip Tall Hole": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 31, "region": Regions.Holes_6_to_9},
     "Hole PuttPutt Tilted": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 32, "region": Regions.Holes_6_to_9},
+}
+
+golfholes_mini_islands: dict[str, GolfHole] = {
+    "Mini Island Hole #1": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 33, "region": Regions.FrontYard},
+    "Mini Island Hole #2": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 34, "region": Regions.Holes_2_to_5},
+    "Mini Island Hole #3": {"id": ID_OFFSET_LOCATION_GOLFHOLE + 35, "region": Regions.Holes_6_to_9},
+}
+
+golfholes_secret_green: dict[str, GolfHole] = {
+    "Secret green hole #1" : {"id" : ID_OFFSET_LOCATION_GOLFHOLE + 36, "region":Regions.Hole_1_Area},
+    "Secret green hole #2" : {"id" : ID_OFFSET_LOCATION_GOLFHOLE + 37, "region":Regions.LakeArea}
 }
 
 breakable_signs_data: dict[str, Breakable] = {
@@ -348,17 +359,198 @@ breakable_signs_data: dict[str, Breakable] = {
     },
 }
 
+# 0,2  4,6  5,7 can be done with the driver from frontyard.
+breakable_statue_data: dict[str, Breakable] = {
+    "Statue block #1" : {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #2" : {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 1,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #3": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 2,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #4": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 3,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #5": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 4,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #6": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 5,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #7": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 6,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+    "Statue block #8": {
+        "id": ID_OFFSET_LOCATION_BREAKABLE_STATUE + 7,
+        "region_club_dict": {
+            GolfClubs.Wedge: [Regions.Holes_2_to_5],
+            GolfClubs.Iron: [Regions.Holes_2_to_5],
+            GolfClubs.Hybrid: [Regions.Holes_2_to_5],
+            GolfClubs.Driver: [Regions.Holes_2_to_5],
+        }
+    },
+}
 
-'''breakable_statue_data: dict[str, Breakable] = {
-    "Statue Block #1" : {"id": ID_OFFSET_LOCATION_BREAKABLE + 9, "region": Regions.Holes_2_to_5},
-    "Statue Block #2": {"id": ID_OFFSET_LOCATION_BREAKABLE + 10, "region": Regions.Holes_2_to_5},
-    "Statue Block #3": {"id": ID_OFFSET_LOCATION_BREAKABLE + 11, "region": Regions.Holes_2_to_5},
-    "Statue Block #4": {"id": ID_OFFSET_LOCATION_BREAKABLE + 12, "region": Regions.Holes_2_to_5},
-    "Statue Block #5": {"id": ID_OFFSET_LOCATION_BREAKABLE + 13, "region": Regions.Holes_2_to_5},
-    "Statue Block #6": {"id": ID_OFFSET_LOCATION_BREAKABLE + 14, "region": Regions.Holes_2_to_5},
-    "Statue Block #7": {"id": ID_OFFSET_LOCATION_BREAKABLE + 15, "region": Regions.Holes_2_to_5},
-    "Statue Block #8": {"id": ID_OFFSET_LOCATION_BREAKABLE + 16, "region": Regions.Holes_2_to_5},
-}'''
+class ParFeedback(IntEnum):
+    Par = 0
+    Birdie = 1
+    Eagle = 2
+    HoleInOne = 3
+
+class RequirementType(IntEnum):
+    CanReachLocation = 1
+    HasItem = 2
+
+class SteamAchievement():
+    req_type: RequirementType
+    location_list: list[Regions]
+
+class HoleRequirement():
+    hole_number: int
+    # the min required club to score a golf result (par, birdie, etc)
+    min_club_for_result: dict[ParFeedback, GolfClubs]
+
+    def __init__(self, hole_number:int, min_club_for_result: dict[ParFeedback, GolfClubs]):
+        self.hole_number = hole_number
+        self.min_club_for_result = min_club_for_result
+
+
+
+#Club was determined by the min club needed to land on the green with atleast 1 shot left
+'''course_holes = [
+    HoleRequirement(1,{
+        ParFeedback.Par : GolfClubs.Wedge,
+        ParFeedback.Birdie : GolfClubs.Iron,
+        ParFeedback.HoleInOne : GolfClubs.Iron}),
+
+    HoleRequirement(2, {
+        ParFeedback.Par: GolfClubs.Iron,
+        ParFeedback.Birdie: GolfClubs.Iron,
+        ParFeedback.Eagle: GolfClubs.Driver,
+        ParFeedback.HoleInOne: GolfClubs.Driver }),
+
+    HoleRequirement(3, {
+        ParFeedback.Par: GolfClubs.Wedge,
+        ParFeedback.Birdie: GolfClubs.Wedge,
+        ParFeedback.HoleInOne: GolfClubs.Wedge }),
+
+    HoleRequirement(4, {
+        ParFeedback.Par: GolfClubs.Iron,
+        ParFeedback.Birdie: GolfClubs.Iron,
+        ParFeedback.Eagle: GolfClubs.Driver,
+        ParFeedback.HoleInOne: GolfClubs.Driver }),
+
+    HoleRequirement(5, {
+        ParFeedback.Par: GolfClubs.Wedge,
+        ParFeedback.Birdie: GolfClubs.Wedge,
+        ParFeedback.Eagle: GolfClubs.Iron,
+        ParFeedback.HoleInOne: GolfClubs.Iron}),
+
+    HoleRequirement(6, {
+        ParFeedback.Par: GolfClubs.Iron,
+        ParFeedback.Birdie: GolfClubs.Hybrid,
+        ParFeedback.Eagle: GolfClubs.Driver,
+        ParFeedback.HoleInOne: GolfClubs.Driver}),
+
+    HoleRequirement(7, {
+        ParFeedback.Par: GolfClubs.Iron,
+        ParFeedback.Birdie: GolfClubs.Iron,
+        ParFeedback.Eagle: GolfClubs.Hybrid,
+        ParFeedback.HoleInOne: GolfClubs.Hybrid}),
+
+    HoleRequirement(8, {
+        ParFeedback.Par: GolfClubs.Wedge,
+        ParFeedback.Birdie: GolfClubs.Wedge,
+        ParFeedback.Eagle: GolfClubs.Iron,
+        ParFeedback.HoleInOne: GolfClubs.Iron}),
+
+    HoleRequirement(9, {
+        ParFeedback.Par: GolfClubs.Wedge,
+        ParFeedback.Birdie: GolfClubs.Iron,
+        ParFeedback.HoleInOne: GolfClubs.Iron}),
+]'''
+
+class Achievement(TypedDict):
+    id: int
+    region: str #if empty, set conditions in rules
+
+#if the region is blank, then it needs to have rules set in set_achievement_rules
+#after i made this i realized most achievements have more complex conditions than 'can access a region', oops
+achievement_data: dict[str, Achievement] = {
+    #ball apex above 200yd
+    "Achievement: To The Moon": {"id": ID_OFFSET_ACHIEVEMENT, "region" :""},
+
+    #skip ball on water
+    "Achievement: Skipper" : {"id": ID_OFFSET_ACHIEVEMENT + 1, "region" :""},
+
+    #get on roof of prize department
+    "Achievement: Parkour" : {"id": ID_OFFSET_ACHIEVEMENT+2, "region" :Regions.Mountaintop},
+
+    #get ball in toilet of pro shop
+    "Achievement: Lavatory Linksman" : {"id": ID_OFFSET_ACHIEVEMENT+3, "region" : ""},
+
+    #obtain all 5 clubs
+    "Achievement: What an Achievement" : {"id": ID_OFFSET_ACHIEVEMENT+4, "region" :""},
+
+    #find the lost ball
+    "Achievement: MIA" : {"id": ID_OFFSET_ACHIEVEMENT+5, "region" :Regions.ProShop_Upstairs},
+
+    #obtain the putter
+    "Achievement: Putt Putt" : {"id": ID_OFFSET_ACHIEVEMENT+6, "region" :""},
+
+    #complete the mystery bounty '???'
+    "Achievement: ????" : {"id": ID_OFFSET_ACHIEVEMENT+7, "region" :""},
+
+    "Achievement: Ace" : {"id": ID_OFFSET_ACHIEVEMENT+8, "region" :""},
+    "Achievement: Eagle" : {"id": ID_OFFSET_ACHIEVEMENT+9, "region" :""},
+    "Achievement: Birdie" : {"id": ID_OFFSET_ACHIEVEMENT+10, "region" :""},
+    "Achievement: Par" : {"id": ID_OFFSET_ACHIEVEMENT+11, "region" :""},
+    "Achievement: Albatross" : {"id": ID_OFFSET_ACHIEVEMENT+12, "region" :""}
+}
 
 #ID is XXYYY, where XX is the parent ID and YYY is the index among its siblings
 #10 if child of "Pads"
@@ -866,7 +1058,7 @@ bounty_data: dict[str, GolfBounty] = {
         "smallest_club_req": GolfClubs.Wedge,
         "game_id": "PadV3_ChipUpImpossible"
     },
-    "???": {
+    "Mystery Bounty": {
         "id": 10059,
         "difficulty": Difficulty.VERY_HARD,
         "region": Regions.Holes_6_to_9,
@@ -926,21 +1118,21 @@ bounty_data: dict[str, GolfBounty] = {
         "id": 12001,
         "difficulty": Difficulty.INTERMEDIATE,
         "region": Regions.FrontYard,
-        "smallest_club_req": GolfClubs.Wedge,   #TODO Different based on if player has hole1 area unlocked
+        "smallest_club_req": GolfClubs.Wedge,
         "game_id": "Hole1Par"
     },
     "Hole 1 - Birdie": {
         "id": 12003,
         "difficulty": Difficulty.VERY_HARD,
         "region": Regions.FrontYard,
-        "smallest_club_req": GolfClubs.Iron,  #TODO Different based on if player has hole1 area unlocked
+        "smallest_club_req": GolfClubs.Iron,
         "game_id": "Hole1Birdy"
     },
     "Hole 1 - Par Plus": {
         "id": 12002,
         "difficulty": Difficulty.DIFFICULT,
         "region": Regions.FrontYard,
-        "smallest_club_req": GolfClubs.Wedge,  #TODO Different based on if player has hole1 area unlocked
+        "smallest_club_req": GolfClubs.Wedge,
         "game_id": "Hole1ParPlus"
     },
     "Hole 2 - Par": {

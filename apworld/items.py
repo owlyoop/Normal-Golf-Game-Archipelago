@@ -49,8 +49,10 @@ ITEM_NAME_TO_ID: dict[str, int] = {
     "Driver": 6,
     "Unlock Practice Mode": 7,
     "Unlock Crouch": 8,
-    "Unlock Range Finder": 9,
+    "Unlock Range Finder": 9
 }
+
+
 
 region_unlocks: list[str] = [
     "Unlock Car Park Gate to Front Yard",
@@ -73,7 +75,8 @@ region_unlocks: list[str] = [
     "Unlock Luke's Office Door",
     "Unlock Cash Room Door",
     "Unlock Padlock Room Door",
-    "Unlock Simulator Room Door"]
+    "Unlock Simulator Room Door",
+    "Unlock Closet in Green Screen Building"]
 
 unlock_id = 0
 for unlock in region_unlocks:
@@ -111,7 +114,8 @@ trap_items: list[str] = [
     "Bouncy Fairway Trap",
     "Accelerated Fairway Trap",
     "Evil Kookaburra",
-    "Annoying Birds"
+    "Annoying Birds",
+    "PuttPutt Bumpers Trap"
 ]
 
 cash_id = 0

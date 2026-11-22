@@ -92,7 +92,7 @@ namespace NormalGolfArchiProject.Patcher
 		[HarmonyPatch(typeof(FPSInteractable), nameof(FPSInteractable.GetPrompt))]
 		private static void FPSInteractable_GetPrompt_Postfix(FPSInteractable __instance, ref string __result)
 		{
-			if (__instance.m_interaction >= (InteractionType)50000 && __instance.m_interaction <= (InteractionType)50020)
+			if (__instance.m_interaction >= (InteractionType)50000 && __instance.m_interaction <= (InteractionType)50020) //shop items
 			{
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
@@ -110,7 +110,7 @@ namespace NormalGolfArchiProject.Patcher
 
 				ie.m_costAnim.SetText(Loc.GetString("Price") + ": <color=#00FF00><wave>$" + __instance.m_cashValue.ToString("N0") + "</wave></color>");
 			}
-			else if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction < (InteractionType)69999)
+			else if (__instance.m_interaction >= (InteractionType)60000 && __instance.m_interaction < (InteractionType)69999) //cash
 			{
 				var ie = SavedGameLoader.Eye;
 				ie.m_usePrompt.SetActive(true);
@@ -211,13 +211,22 @@ namespace NormalGolfArchiProject.Patcher
 				Plugin.ArchipelagoClient.SendCheck((int)__instance.m_interaction);
 				__instance.gameObject.SetActive(false);
 				__instance.transform.parent.gameObject.SetActive(false);
+				//__instance.m_topOfObject.SetActive(false);
+
+				//MIA achievement for lost ball doesnt automatically trigger
+				if (__instance.m_interaction == (InteractionType)60014)
+				{
+					Plugin.ArchipelagoClient.SendCheck(73005);
+				}
 			}
 
 			if (!boughtCheck) return;
 
+			__instance.gameObject.SetActive(false);
+			__instance.transform.parent.gameObject.SetActive(false);
 
 			Plugin.ArchipelagoClient.SendCheck((int)__instance.m_interaction);
-			__instance.m_topOfObject.SetActive(false);
+
 
 			SaveManager.instance.SaveRun();
 		}
@@ -226,29 +235,23 @@ namespace NormalGolfArchiProject.Patcher
 		[HarmonyPatch(typeof(Breakable), nameof(Breakable.OnCollisionEnter))]
 		private static void Breakable_OnCollisionEnter_Postfix(Breakable __instance, UnityEngine.Collision __0)
 		{
+			if (!SavedGameLoader.BreakableChecksEnabled) return;
+
 			if (__0.gameObject.layer == LayerMask.NameToLayer("Ball"))
 			{
-				//programming is my passion
-				if (__instance.transform.parent.name == "plyboard")
-					Plugin.ArchipelagoClient.SendCheck(71000);
-				else if (__instance.transform.parent.name == "plyboard (2)")
-					Plugin.ArchipelagoClient.SendCheck(71001);
-				else if (__instance.transform.parent.name == "plyboard (5)")
-					Plugin.ArchipelagoClient.SendCheck(71002);
-				else if (__instance.name == "MU1a")
-					Plugin.ArchipelagoClient.SendCheck(71003);
-				else if (__instance.name == "MU1b")
-					Plugin.ArchipelagoClient.SendCheck(71004);
-				else if (__instance.name == "MU2a")
-					Plugin.ArchipelagoClient.SendCheck(71005);
-				else if (__instance.name == "MU2b")
-					Plugin.ArchipelagoClient.SendCheck(71006);
-				else if (__instance.name == "1")
-					Plugin.ArchipelagoClient.SendCheck(71007);
-				else if (__instance.name == "2")
-					Plugin.ArchipelagoClient.SendCheck(71008);
-				else if (__instance.transform.parent.name == "plyboard_cashroom")
-					Plugin.ArchipelagoClient.SendCheck(71009);
+				string parent = __instance.transform.parent.name;
+				Plugin.BepinLogger.LogInfo("Breakable name: " + __instance.name);
+				Plugin.BepinLogger.LogInfo("Breakable parent name: " + parent);
+				if (GameData.BreakableParentNameIDs.ContainsKey(parent))
+				{
+					if (!SavedGameLoader.BreakableChecksStatues && parent.StartsWith("Cube"))
+						return;
+
+					Plugin.ArchipelagoClient.SendCheck(GameData.BreakableParentNameIDs[parent]);
+				}
+				else if (__instance.name == "MU1a" || __instance.name == "MU1b" || __instance.name == "MU2a" || __instance.name == "MU2b"
+					|| __instance.name == "1" || __instance.name == "2")
+					Plugin.ArchipelagoClient.SendCheck(GameData.BreakableParentNameIDs[__instance.name]);
 
 			}
 		}
@@ -260,8 +263,11 @@ namespace NormalGolfArchiProject.Patcher
 			if (__0.gameObject.layer == LayerMask.NameToLayer("Ball"))
 			{
 				Plugin.BepinLogger.LogInfo("golfball in " + __instance.id);
-				var id = GameData.BallTargetIDs[__instance.id];
-				Plugin.ArchipelagoClient.SendCheck(id);
+				if (GameData.BallTargetIDs.ContainsKey(__instance.id))
+				{
+					var id = GameData.BallTargetIDs[__instance.id];
+					Plugin.ArchipelagoClient.SendCheck(id);
+				}
 			}
 		}
 
@@ -286,6 +292,7 @@ namespace NormalGolfArchiProject.Patcher
 		[HarmonyPatch(typeof(SelectClub), nameof(SelectClub.Start))]
 		private static void SelectClub_Start_Postfix(SelectClub __instance)
 		{
+			if (Plugin.ArchipelagoClient.session == null) return;
 			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
 			{
 				int id = (int)item.ItemId;
@@ -372,6 +379,71 @@ namespace NormalGolfArchiProject.Patcher
 		private static void SaveManager_SetUpScene_Postfix(SaveManager __instance)
 		{
 			//SavedGameLoader.InitializeWorld();
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch(typeof(SteamManager), nameof(SteamManager.UnlockAchievement))]
+		private static void SteamManager_UnlockAchievement_Postfix(SteamManager __instance, AchievementID __0)
+		{
+			if (!SavedGameLoader.AchievementsChecks) return;
+			switch (__0)
+			{
+				case AchievementID.TALL_BALL:
+					Plugin.ArchipelagoClient.SendCheck(73000);
+					break;
+
+				case AchievementID.SKIPPER:
+					Plugin.ArchipelagoClient.SendCheck(73001);
+					break;
+
+				case AchievementID.PARKOUR:
+					Plugin.ArchipelagoClient.SendCheck(73002);
+					break;
+
+				case AchievementID.TOILET:
+					Plugin.ArchipelagoClient.SendCheck(73003);
+					break;
+
+				case AchievementID.FULL_BAG:
+					//Plugin.ArchipelagoClient.SendCheck(73004);
+					break;
+
+				case AchievementID.MISSING_IN_ACTION:
+					//gets sent in the fpsinteract postfix
+					//Plugin.ArchipelagoClient.SendCheck(73005);
+					break;
+
+				case AchievementID.PUTTER:
+					//gets sent when player recieves putter
+					//Plugin.ArchipelagoClient.SendCheck(73006);
+					break;
+
+				case AchievementID.CODE:
+					Plugin.ArchipelagoClient.SendCheck(73007);
+					break;
+
+				case AchievementID.ACE:
+					if (SavedGameLoader.AchievementsHoleInOne)
+						Plugin.ArchipelagoClient.SendCheck(73008);
+					break;
+
+				case AchievementID.EAGLE:
+					Plugin.ArchipelagoClient.SendCheck(73009);
+					break;
+
+				case AchievementID.BIRDIE:
+					Plugin.ArchipelagoClient.SendCheck(73010);
+					break;
+
+				case AchievementID.PAR:
+					Plugin.ArchipelagoClient.SendCheck(73011);
+					break;
+
+				case AchievementID.ALBATROSS:
+					if (SavedGameLoader.AchievementsHole6)
+						Plugin.ArchipelagoClient.SendCheck(73012);
+					break;
+			}
 		}
 	}
 

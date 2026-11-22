@@ -214,6 +214,9 @@ public class Plugin : BaseUnityPlugin
 				cpH2G1.localRotation = Quaternion.Euler(cpH2G1.eulerAngles.x, 285f, cpH2G1.eulerAngles.z);
 				var cpH2G2 = GameObject.Find("3D Course/Props/GATES/DrivewayGate/gate2_LOD0").transform;
 				cpH2G2.localRotation = Quaternion.Euler(cpH2G2.eulerAngles.x, 70f, cpH2G2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/DrivewayGate/padlock2Carpark").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/DrivewayGate/padlock2OpenCarpark").SetActive(false);
 				break;
 
 			case 1002:  //pro shop door
@@ -232,6 +235,9 @@ public class Plugin : BaseUnityPlugin
 
 				var fyH1G2 = GameObject.Find("3D Course/Props/GATES/Hole1Gate/gate2_LOD0").transform;
 				fyH1G2.localRotation = Quaternion.Euler(fyH1G2.eulerAngles.x, 70f, fyH1G2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/Hole1Gate/padlock2 (1)").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/Hole1Gate/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1004:  //front yard <-> holes6-9
@@ -241,12 +247,16 @@ public class Plugin : BaseUnityPlugin
 
 				var fyH9G2 = GameObject.Find("3D Course/Props/GATES/Hole9Gate/gate2_LOD0").transform;
 				fyH9G2.localRotation = Quaternion.Euler(fyH9G2.eulerAngles.x, 70f, fyH9G2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/Hole9Gate/padlock2 (1)").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/Hole9Gate/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1005:  //front yard <-> teleport #2B shed door
 				Plugin.BepinLogger.LogInfo("Opening Front Yard teleporter shed door");
 				var fyTpShed = GameObject.Find("3D Course/Buildings/miniShed/SM_TinShed_Door").transform;
 				fyTpShed.localRotation = Quaternion.Euler(fyTpShed.eulerAngles.x, 100f, fyTpShed.eulerAngles.z);
+				GameObject.Find("3D Course/Buildings/miniShed/SM_TinShed_Door/padlock2 (2)").SetActive(false);
 				break;
 
 			case 1006:  //pro shop upstairs access
@@ -268,6 +278,9 @@ public class Plugin : BaseUnityPlugin
 
 				var H1H2G2 = GameObject.Find("3D Course/Props/GATES/Hole2Gate/gate2_LOD0").transform;
 				H1H2G2.localRotation = Quaternion.Euler(H1H2G2.eulerAngles.x, 285f, H1H2G2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/Hole2Gate/padlock2 (1)").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/Hole2Gate/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1009:  //holes 2-5 <-> holes 6-9
@@ -277,6 +290,9 @@ public class Plugin : BaseUnityPlugin
 
 				var hole6Gate2 = GameObject.Find("3D Course/Props/GATES/Hole6Gate/gate2_LOD0 (2)").transform;
 				hole6Gate2.localRotation = Quaternion.Euler(hole6Gate2.eulerAngles.x, 285f, hole6Gate2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/Hole6Gate/padlock2 (2)").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/Hole6Gate/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1010:  //holes 2-5 <-> holes 6-9 (driveway gate)
@@ -286,18 +302,27 @@ public class Plugin : BaseUnityPlugin
 
 				var drivewayGate2 = GameObject.Find("3D Course/Props/GATES/DrivewayGate/gate2_LOD0 (1)").transform;
 				drivewayGate2.localRotation = Quaternion.Euler(drivewayGate2.eulerAngles.x, 75f, drivewayGate2.eulerAngles.z);
+
+				GameObject.Find("3D Course/Props/GATES/DrivewayGate/padlock2Carpark2").SetActive(false);
+				GameObject.Find("3D Course/Props/GATES/DrivewayGate/padlock2OpenCarpark2").SetActive(false);
 				break;
 
 			case 1011:  //teleporter #2A shed door
 				Plugin.BepinLogger.LogInfo("Opening shed door for Teleport #2A");
 				var shed2A = GameObject.Find("3D Course/Buildings/Hole3Shed/SM_TinShed_Door").transform;
 				shed2A.localRotation = Quaternion.Euler(shed2A.eulerAngles.x, 179f, shed2A.eulerAngles.z);
+
+				GameObject.Find("3D Course/Buildings/Hole3Shed/SM_TinShed_Door/padlock2 (2)").SetActive(false);
+				GameObject.Find("3D Course/Buildings/Hole3Shed/SM_TinShed_Door/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1012:  //teleporter #3 shed door
 				Plugin.BepinLogger.LogInfo("Opening shed door for Lake Area");
 				var shed3 = GameObject.Find("3D Course/Buildings/miniShed (1)/SM_TinShed_Door").transform;
 				shed3.localRotation = Quaternion.Euler(shed3.eulerAngles.x, 134f, shed3.eulerAngles.z);
+
+				GameObject.Find("3D Course/Buildings/miniShed (1)/SM_TinShed_Door/padlock2 (2)").SetActive(false);
+				GameObject.Find("3D Course/Buildings/miniShed (1)/SM_TinShed_Door/padlock2_OPENED").SetActive(false);
 				break;
 
 			case 1013:  //mountaintop gate
@@ -343,6 +368,11 @@ public class Plugin : BaseUnityPlugin
 			case 1020: //simulator room
 				var simDoor = GameObject.Find("3D Course/PRO SHOP/PROPS/Dynamic/OfficeDoorPADLOCKED").transform;
 				simDoor.localRotation = Quaternion.Euler(270f, 120f, 0f);
+				break;
+
+			case 1021: //green screen building closet
+				var serverDoor = GameObject.Find("3D Course/Buildings/marketingdpt2/ServerDoor").transform;
+				serverDoor.localRotation = Quaternion.Euler(serverDoor.eulerAngles.x, 33f, serverDoor.eulerAngles.z);
 				break;
 
 			default:
@@ -403,6 +433,7 @@ public class Plugin : BaseUnityPlugin
 			case 2: //putter
 				var putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Putter").GetComponent<SelectableClub>();
 				putter.SetLockedState(true);
+				ArchipelagoClient.SendCheck(73006); //achievement check for getting putter
 				break;
 
 			case 3: //wedge
@@ -436,6 +467,12 @@ public class Plugin : BaseUnityPlugin
 			case 9: //rangefinder
 				SavedGameLoader.CanRangeFind = true;
 				break;
+		}
+
+		//achievement check
+		if (SavedGameLoader.CheckIfAllClubsUnlocked())
+		{
+			Plugin.ArchipelagoClient.SendCheck(73004);
 		}
 	}
 
@@ -497,6 +534,10 @@ public class Plugin : BaseUnityPlugin
 
 			case 4006: //annoying birbs
 				SavedGameLoader.EnableAnnoyingBirds();
+				break;
+
+			case 4007:
+				BallPhysicsTraps.ActivatePuttPuttBumpersTrap(60f);
 				break;
 		}
 	}

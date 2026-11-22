@@ -29,13 +29,22 @@ namespace NormalGolfArchiProject.Patcher
 
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(Ball), nameof(Ball.OnCollisionStay))]
-		private static void Ball_OnCollisionStay_PostFix(Ball __instance)
+		private static void Ball_OnCollisionStay_PostFix(Ball __instance, Collision __0)
 		{
-			if (__instance == null) return;
-			if (!BallPhysicsTraps.IsAcceleratedFairway) return;
-			if (__instance.m_currentShotData.m_lastTouchedSurface.Substring(0, 4) == "Fair")
+			if (__instance == null || __0 == null) return;
+			if (BallPhysicsTraps.IsAcceleratedFairway == true)
 			{
-				__instance.m_rb.linearVelocity += (__instance.m_rb.linearVelocity.normalized * 0.32f);
+				if (__0.collider.material.name.Contains("Fairway"))
+				{
+					__instance.m_rb.linearVelocity += (__instance.m_rb.linearVelocity.normalized * 0.32f);
+				}
+			}
+			if (BallPhysicsTraps.IsBumperPuttWalls == true)
+			{
+				if (__0.collider.material.name.Contains("Wood"))
+				{
+					__instance.m_rb.linearVelocity += ((__instance.m_rb.linearVelocity.normalized * 2.5f) + (Vector3.up * 0.64f));
+				}
 			}
 		}
 	}

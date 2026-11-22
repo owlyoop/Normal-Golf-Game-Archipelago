@@ -61,6 +61,19 @@ namespace NormalGolfArchiProject.Patcher
 		static bool hybrid = StartingClub == 3;
 		static bool driver = StartingClub == 4;
 
+		#region Options
+		public static bool HoleChecksEnabled;
+		public static bool HoleChecksMiniIslands;
+		public static bool HoleChecksSecretGreens;
+
+		public static bool BreakableChecksEnabled;
+		public static bool BreakableChecksStatues;
+
+		public static bool AchievementsChecks;
+		public static bool AchievementsHoleInOne;
+		public static bool AchievementsHole6;
+		#endregion
+
 		#region References
 		static List<FPSInteractable> shopItems = new List<FPSInteractable>();
 		static List<FPSInteractable> cashItems = new List<FPSInteractable>();
@@ -78,11 +91,17 @@ namespace NormalGolfArchiProject.Patcher
 		static AudioSource radio;
 		static AudioSource kookaburra;
 		static AudioSource shopMusic;
+
+		public static List<MeshCollider> PuttGreenPhysMats = new List<MeshCollider>();
+		public static List<MeshCollider> PuttWallsPhysMats = new List<MeshCollider>();
+
+		public static List<SelectableClub> ClubsList = new List<SelectableClub>();
+
+		public static PhysicsTrapUI TrapUI;
 		#endregion
 
 		public static void Update()
 		{
-
 			_timeKookaburra -= Time.deltaTime;
 			if (_timeKookaburra <= 0f)
 			{
@@ -107,25 +126,33 @@ namespace NormalGolfArchiProject.Patcher
 			StartingClub = int.Parse(data["starting_club"].ToString());
 			BountyGoal = int.Parse(data["req_bounties_to_win"].ToString());
 			StartingRegion = int.Parse(data["starting_region"].ToString());
+
+			Plugin.BepinLogger.LogInfo("Starting region is: " + StartingRegion);
+
+			HoleChecksEnabled = int.Parse(data["hole_checks_enabled"].ToString()) != 0;
+			HoleChecksMiniIslands = int.Parse(data["hole_checks_enable_mini_island_holes"].ToString()) != 0;
+			HoleChecksSecretGreens = int.Parse(data["hole_checks_enable_secret_greens"].ToString()) != 0;
+			BreakableChecksEnabled = int.Parse(data["breakable_checks_enabled"].ToString()) != 0;
+			BreakableChecksStatues = int.Parse(data["breakable_checks_statues_enabled"].ToString()) != 0;
+			AchievementsChecks = int.Parse(data["achievement_checks_enabled"].ToString()) != 0;
+			AchievementsHoleInOne = int.Parse(data["achievement_checks_hole_in_one_enabled"].ToString()) != 0;
+			AchievementsHole6 = int.Parse(data["achievement_checks_albatross_hole6_enabled"].ToString()) != 0;
 			switch (StartingRegion)
 			{
-				case 0:
+				case 0: //carpark
 					startingPos = new Vector3(69.551f, 5.2834f, -367.2121f);
 					break;
-				case 1:
+				case 1: //frontyard
 					startingPos = new Vector3(48.1098f, 4.7228f, -318.9951f);
 					break;
-				case 4:
+				case 4: //hole1
 					startingPos = new Vector3(23.85f, 8.0577f, -221.059f);
 					break;
-				case 5:
+				case 5: //holes2-5
 					startingPos = new Vector3(322.9053f, 44.9822f, -343.5749f);
 					break;
-				case 6:
+				case 6: //holes6-9
 					startingPos = new Vector3(-221.8353f, 8.9257f, -574.2776f);
-					break;
-				case 666:
-					startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
 					break;
 				default:
 					startingPos = new Vector3(-134.9768f, 9.9882f, 39.1788f);
@@ -151,7 +178,7 @@ namespace NormalGolfArchiProject.Patcher
 			bool iron = StartingClub == 2;
 			bool hybrid = StartingClub == 3;
 			bool driver = StartingClub == 4;*/
-			iron = true;	//i couldn't figure out how to get the clubs panel working if i load the save without the iron. i just disable the iron later
+			//iron = true;	//i couldn't figure out how to get the clubs panel working if i load the save without the iron. i just disable the iron later
 			Plugin.BepinLogger.LogInfo("Starting club is " + StartingClub);
 
 
@@ -222,6 +249,7 @@ namespace NormalGolfArchiProject.Patcher
 			SaveManager.instance.m_run = run;
 			ProgressManager.instance.m_bank.m_balance = SaveManager.instance.m_run.m_bankBalance;
 			ProgressManager.instance.m_bank.UpdateVisuals();
+			SetChallengeToMLEnding();
 			return run;
 		}
 
@@ -234,11 +262,15 @@ namespace NormalGolfArchiProject.Patcher
 		}
 
 		//This is a frankenstein'd version of SetUpScene
+		//It is a mess, I am just brute forcing it so the player starts the game correctly since I could never figure out why prev versions werent working only for some people
 		public static void InitializeWorld()
 		{
 			Plugin.BepinLogger.LogInfo("setupscene in initworld");
 			SaveManager.instance.SetUpScene();
 			Plugin.BepinLogger.LogInfo("initworld begin");
+
+			cashItems = new List<FPSInteractable>();
+			shopItems = new List<FPSInteractable>();
 			
 			SetOptionsValues();
 			Plugin.BepinLogger.LogInfo("startingpos: " + startingPos);
@@ -275,7 +307,7 @@ namespace NormalGolfArchiProject.Patcher
 
 			SaveManager.instance.m_run = run;
 
-
+			#region setUp scene
 			SaveableObject[] array = UnityEngine.Object.FindObjectsByType<SaveableObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 			foreach (SaveableObject saveableObject in array)
 			{
@@ -314,28 +346,41 @@ namespace NormalGolfArchiProject.Patcher
 			}
 			ChallengeSystem.instance.ToggleOffPreviousChallengeObjects();
 
+			#endregion
+
 			ProgressManager.instance.m_bank.m_balance = SaveManager.instance.m_run.m_bankBalance;
 			ProgressManager.instance.m_bank.UpdateVisuals();
 
-			MoveAndHitController.instance.m_FPSController.GetComponent<FirstPersonCharacter>().SetPosition(startingPos);
+			if (MoveAndHitController.instance.m_FPSController.GetComponent<FirstPersonCharacter>().GetPosition() == Vector3.zero)
+				MoveAndHitController.instance.m_FPSController.GetComponent<FirstPersonCharacter>().SetPosition(startingPos);
+			Plugin.BepinLogger.LogInfo("SetChallengeToML");
+			SetChallengeToMLEnding();
+			Plugin.BepinLogger.LogInfo("DisableDialogue");
+			DisableAllDialogueTriggers();
+
+			if (ProgressManager.instance.m_bank.m_balance == 99900)
+				ProgressManager.instance.m_bank.ChangeBalance(-99900, false, true);
 
 			SaveManager.instance.SaveRun();
 
+			Plugin.BepinLogger.LogInfo("LockAllBounties");
 			LockAllBounties();
 			CloseAllGates();
 			CloseAllProShopDoors();
 			CloseAllShedDoors();
-
+			Plugin.BepinLogger.LogInfo("SetupProShop");
 			SetupProShop();
 			SetupAllStrayCash();
 			SetupBreakables();
-
+			Plugin.BepinLogger.LogInfo("SetClubs");
 			SetClubs();
 			RemoveCashRewards();
 			PreparePhysicsMaterials();
 			PrepareAudioReferences();
+			GatherPhysicMaterials();
 
 			CreateMountaintopGate();
+			CreatePhysicsTrapStatus();
 
 			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
 			{
@@ -343,9 +388,9 @@ namespace NormalGolfArchiProject.Patcher
 				if (id >= 2 && id <= 9) Plugin.ReceiveMiscItem(id);
 				else if (id >= 600 && id <= 608) Plugin.ReceiveDifficultyUnlockItem(id);
 				else if (id >= 1000 && id < 2000) Plugin.ReceiveRegionUnlockItem(id);
+				else if (id == 3004) IncreaseSprintSpeed(1f);
 			}
 
-			//UnlockStartingDifficulties();
 
 			Eye = GameObject.Find("___PLAYER/First Person Character/Eye").GetComponent<InteractChecker>();
 			ChallengeReminder = GameObject.Find("___PLAYER/First Person Character/Eye/Camera/Canvas/CHALLENGEREMINDER").GetComponent<ChallengeReminder>();
@@ -376,22 +421,51 @@ namespace NormalGolfArchiProject.Patcher
 				int id = (int)i.m_interaction;
 				if (Plugin.ArchipelagoClient.session.Locations.AllLocationsChecked.Contains(id))
 				{
-					i.m_topOfObject.SetActive(false);
+					i.m_topOfObject?.SetActive(false);
 				}
 			}
-
+			Plugin.BepinLogger.LogInfo("GreenTeeLong");
 			GameObject.Find("3D Course/TEES/GreenTeeLong").gameObject.SetActive(false);
 
 			hasOpenedClubPanel = false;
 
 			CompletedBounties = SaveManager.instance.m_run.m_completedBounties.Count;
 
-			ChallengeReminder.SetString("init world");
-
 			ProgressManager.instance.m_bank.ChangeBalance(0, halfSound: false, fast: true);
+			Plugin.BepinLogger.LogInfo("panelmanager unlock clubs");
 			PanelManager.instance.m_clubPanel.Unlock(animate: false);
 
 			SaveManager.instance.SaveRun();
+
+			foreach (var item in Plugin.ArchipelagoClient.session.Items.AllItemsReceived)
+			{
+				int id = (int)item.ItemId;
+				if (id == 3004) IncreaseSprintSpeed(1f);
+			}
+
+			ChallengeReminder.SetString("init world");
+		}
+
+		static void SetChallengeToMLEnding()
+		{
+			var all = Resources.FindObjectsOfTypeAll<ChallengeSet>();
+			foreach(var c in all)
+			{
+				if (c.name == "ML_Ending")
+				{
+					ChallengeSystem.instance.m_mainChallengeSet = c;
+					Plugin.BepinLogger.LogInfo("Set mainChallengeSet to ML_Ending");
+				}
+			}
+
+			if (ChallengeSystem.instance.m_mainChallengeSet.name != "ML_Ending")
+				Plugin.BepinLogger.LogWarning("mainChallengeSet was not set to ML_Ending!");
+		}
+
+		public static void DisableAllDialogueTriggers()
+		{
+			GameObject.Find("3D Course/TRIGGERS")?.SetActive(false);
+			GameObject.Find("3D Course/CarTriggers")?.SetActive(false);
 		}
 
 		public static void LockAllBounties()
@@ -428,43 +502,6 @@ namespace NormalGolfArchiProject.Patcher
 			}
 
 			Plugin.BepinLogger.LogInfo("Locked all bounties");
-		}
-
-		public static void UnlockStartingDifficulties()
-		{
-			if (Plugin.ArchipelagoClient.HasItemReceived(600))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.SuperEasy);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(601))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.Easy);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(602))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.Medium);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(603))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.KindaHard);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(604))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.Hard);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(605))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.VeryHard);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(606))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.Nightmare);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(607))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.SuperNightmare);
-
-			if (Plugin.ArchipelagoClient.HasItemReceived(608))
-				Plugin.UnlockAllBountiesByDifficulty(Difficulty.ActuallyImpossible);
-
-			var items = Plugin.ArchipelagoClient.session.Items.AllItemsReceived;
-
-			foreach(var i in items)
-			{
-				Plugin.BepinLogger.LogInfo(i.ItemName);
-			}
 		}
 
 		/// <summary>
@@ -518,6 +555,11 @@ namespace NormalGolfArchiProject.Patcher
 					//Plugin.BepinLogger.LogInfo(g2.parent.name + " " + g2.name);
 				}
 			}
+			foreach(var gate in ProgressManager.instance.m_objectStates.m_gates)
+			{
+				gate.padlock?.SetActive(false);
+				gate.padlockOpened?.SetActive(false);
+			}
 		}
 
 		public static void CloseAllShedDoors()
@@ -543,6 +585,12 @@ namespace NormalGolfArchiProject.Patcher
 
 			GameObject.Find("3D Course/Buildings/miniShed/Hole1ShedATeleporter").SetActive(false);
 			GameObject.Find("3D Course/Buildings/Hole3Shed/TeleporterHole3").SetActive(false);
+
+			var serverDoor = GameObject.Find("3D Course/Buildings/marketingdpt2/ServerDoor").transform;
+			serverDoor.localRotation = Quaternion.Euler(serverDoor.eulerAngles.x, 180f, serverDoor.eulerAngles.z);
+
+			GameObject.Find("3D Course/Buildings/marketingdpt2/ServerDoor/padlock2 (2)").SetActive(false);
+			GameObject.Find("3D Course/Buildings/marketingdpt2/ServerDoor/padlock2_OPENED").SetActive(false);
 		}
 
 		public static void CloseAllProShopDoors()
@@ -596,22 +644,27 @@ namespace NormalGolfArchiProject.Patcher
 			SelectableClub driver = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Driver").GetComponent<SelectableClub>();
 			driver.SetLockedState(StartingClub == 4);
 			driver.Unselect();
+			ClubsList.Add(driver);
 
 			SelectableClub hybrid = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Hybrid").GetComponent<SelectableClub>();
 			hybrid.SetLockedState(StartingClub == 3);
 			hybrid.Unselect();
+			ClubsList.Add(hybrid);
 
 			SelectableClub iron = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/7 Iron").GetComponent<SelectableClub>();
 			iron.SetLockedState(StartingClub == 2);
 			iron.Unselect();
+			ClubsList.Add(iron);
 
 			SelectableClub wedge = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Wedge").GetComponent<SelectableClub>();
 			wedge.SetLockedState(StartingClub == 1);
 			wedge.Unselect();
+			ClubsList.Add(wedge);
 
 			SelectableClub putter = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs/Unlocked/List/Content/Putter").GetComponent<SelectableClub>();
 			putter.SetLockedState(StartingClub == 0);
 			putter.Unselect();
+			ClubsList.Add(putter);
 
 			/*var selectClub = GameObject.Find("PANEL_ClubsAndMore/Canvas/FRAME/Content/Clubs").GetComponent<SelectClub>();
 			Plugin.BepinLogger.LogInfo("select club " + selectClub.name);
@@ -743,7 +796,7 @@ namespace NormalGolfArchiProject.Patcher
 			var dupeCash = GameObject.Find(cashParent + "100"); //two of the cash items have the same exact name and im using Gameobject.Find like a criminal
 			dupeCash.SetName("100_dupe");
 
-
+			//this needs to match the order in game_data.py
 			var cash0 = SetupFPSInteractable(cashParent, "50", "/Mesh/TriggerIgnoreWalls");
 			var cash1 = SetupFPSInteractable(cashParent, "100_dupe", suffix);
 			var cash2 = SetupFPSInteractable(cashParent, "100", suffix);
@@ -783,6 +836,8 @@ namespace NormalGolfArchiProject.Patcher
 			var ucash_10 = SetupUpstairsCash(upCashParent, "CASH (10)", upCashSuffix2);
 			var ucash_11 = SetupUpstairsCash(upCashParent, "CASH (11)", upCashSuffix2);
 			var ucash_12 = SetupUpstairsCash(upCashParent, "CASH (12)", upCashSuffix2);
+
+			var closetButton = SetupFPSInteractable("3D Course/Buildings/marketingdpt2/PROPS/", "server", "/Interact (1)");
 
 		}
 
@@ -894,6 +949,16 @@ namespace NormalGolfArchiProject.Patcher
 			board4.transform.parent.SetName("plyboard_cashroom");
 			//Plugin.BepinLogger.LogInfo(board4.name);
 			board4.SetActive(true);
+
+			if (BreakableChecksStatues)
+			{
+				string statue = "3D Course/Props/StatueBase/statueBlock/Cube";
+				GameObject.Find("3D Course/Props/StatueBase/statueBlock/Cube/Cube (1)").SetActive(true);
+				for (int i = 1; i < 8; i++)
+				{
+					GameObject.Find(statue + ".00" + i + "/Cube.00" + i + " (1)").SetActive(true);
+				}
+			}
 		}
 
 		/// <summary>
@@ -955,35 +1020,6 @@ namespace NormalGolfArchiProject.Patcher
 			BallPhysicsTraps.InitializeTraps();
 		}
 
-		static void PrepareBreakables()
-		{
-			string plyboardParent = "3D Course/PROPS/Car Park";
-			var plyboard1 = GameObject.Find(plyboardParent + "/plyboard/Board");
-			plyboard1.SetActive(true);
-
-			var plyboard2 = GameObject.Find(plyboardParent + "/plyboard (2)/Board");
-			plyboard2.SetActive(true);
-
-			var plyboard3 = GameObject.Find(plyboardParent + "/plyboard (5)/Board");
-			plyboard3.SetActive(true);
-
-			string signsParent = "3D Course/Props/Car Park/Signs";
-			var meetup1a = GameObject.Find(signsParent + "/MeetUp1/MU1a");
-			var meetup1b = GameObject.Find(signsParent + "/MeetUp1/MU1b");
-			meetup1a.SetActive(true);
-			meetup1b.SetActive(true);
-
-			var meetup2a = GameObject.Find(signsParent + "/MeetUp2/MU2a");
-			var meetup2b = GameObject.Find(signsParent + "/MeetUp2/MU2b");
-			meetup2a.SetActive(true);
-			meetup2b.SetActive(true);
-
-			var construction1 = GameObject.Find(signsParent + "/Construction/1");
-			var construction2 = GameObject.Find(signsParent + "/Construction/2");
-			construction1.SetActive(true);
-			construction2.SetActive(true);
-		}
-
 		static void PrepareAudioReferences()
 		{
 			ambience = GameObject.Find("__Managers House/Audio Manager/AmbienceManager").GetComponent<AmbienceManager>();
@@ -999,6 +1035,59 @@ namespace NormalGolfArchiProject.Patcher
 
 			radio = GameObject.Find("__Managers House/Audio Manager/RadioController").GetComponent<AudioSource>();
 			shopMusic = GameObject.Find("__Managers House/Audio Manager/MUSICAREA").GetComponent<MusicArea>().m_music;
+		}
+
+		static void GatherPhysicMaterials()
+		{
+			string prefix = "3D Course/PuttPuttCourses/";
+			string green = "/PP3_GREEN";
+			string wall = "/PP3_WALLS";
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttPuttPool" + green + ".006").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttPuttPool" + wall + ".006").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttTallBoy" + green + ".007").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttTallBoy" + wall + ".007").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttTallBoy (1)" + green + ".007").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttTallBoy (1)" + wall + ".007").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttTallBoy (2)" + green + ".007").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttTallBoy (2)" + wall + ".007").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttJump" + green + ".008").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttJump" + wall + ".008").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttTilted" + green + ".009").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttTilted" + wall + ".009").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttPuttPool" + green + ".006").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttPuttPool" + wall + ".006").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "practiceGreen/PracticeGreen").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "practiceGreen/Wall").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "practiceGreen/Walls").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttHole7/PP2_GREEN").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttHole7/PP2_WALLS").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttPutt5" + green + ".004").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttPutt5" + wall + ".004").GetComponent<MeshCollider>());
+
+			PuttGreenPhysMats.Add(GameObject.Find(prefix + "puttPutt_Hole4" + green + ".001").GetComponent<MeshCollider>());
+			PuttWallsPhysMats.Add(GameObject.Find(prefix + "puttPutt_Hole4" + wall + ".001").GetComponent<MeshCollider>());
+		}
+
+		static void CreatePhysicsTrapStatus()
+		{
+			var canvas = GameObject.Find("PANEL_Main Controls/Canvas");
+			if (canvas == null)
+			{
+				Plugin.BepinLogger.LogError("Panel_Main Controls canvas not found");
+			}
+			GameObject ui = new GameObject("PhysicsTrapUI");
+			ui.transform.SetParent(canvas.transform);
+			TrapUI = ui.AddComponent<PhysicsTrapUI>();
+			TrapUI.Initialize();
 		}
 
 		public static void SetMusicPitchLow()
@@ -1059,6 +1148,16 @@ namespace NormalGolfArchiProject.Patcher
 			sprint.maxSprintSpeed += amount;
 			if (sprint.maxSprintSpeed > 64f)
 				sprint.maxSprintSpeed = 64f;
+		}
+
+		public static bool CheckIfAllClubsUnlocked()
+		{
+			bool result = true;
+			foreach(var club in ClubsList)
+			{
+				if (!club.m_unlocked) result = false;
+			}
+			return result;
 		}
 
 	}

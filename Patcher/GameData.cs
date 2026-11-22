@@ -18,9 +18,7 @@ namespace NormalGolfArchiProject.Patcher
 				["hole7"] = 70006,
 				["hole8"] = 70007,
 				["hole9"] = 70008,
-				["miniIsland"] = 70009,
-				["miniIsland2"] = 70010,
-				["miniIsland3"] = 70011,
+	
 				["bigBunkerHole"] = 70012,
 				["puttputt1"] = 70013,
 				["puttputt2"] = 70014,
@@ -41,7 +39,38 @@ namespace NormalGolfArchiProject.Patcher
 				["tallBoy1"] = 70029,
 				["tallBoy2"] = 70030,
 				["tallBoy3"] = 70031,
-				["puttTilt"] = 70032
+				["puttTilt"] = 70032,
+
+				["miniIsland"] = 70033,
+				["miniIsland2"] = 70034,
+				["miniIsland3"] = 70035,
+
+				["secretGreen"] = 70036,
+				["secretGreen2"] = 70037,
+			};
+
+		public static readonly Dictionary<string, int> BreakableParentNameIDs =
+			new Dictionary<string, int>()
+			{
+				["plyboard"] = 71000,
+				["plyboard (2)"] = 71001,
+				["plyboard (5)"] = 71002,
+				["MU1a"] = 71003,
+				["MU1b"] = 71004,
+				["MU2a"] = 71005,
+				["MU2b"] = 71006,
+				["1"] = 71007,
+				["2"] = 71008,
+				["plyboard_cashroom"] = 71009,
+
+				["Cube"] = 72000,
+				["Cube.001"] = 72001,
+				["Cube.002"] = 72002,
+				["Cube.003"] = 72003,
+				["Cube.004"] = 72004,
+				["Cube.005"] = 72005,
+				["Cube.006"] = 72006,
+				["Cube.007"] = 72007,
 			};
 	}
 }

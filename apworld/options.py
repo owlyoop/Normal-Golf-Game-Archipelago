@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle
+from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle, DefaultOnToggle
+
 
 # In this file, we define the options the player can pick.
 # The most common types of options are Toggle, Range and Choice.
@@ -44,22 +45,6 @@ class StartingRegion(Choice):
 
     default = "random"
 
-'''class StartingDifficulty(Choice):
-    """The class of bounty difficulty that will be available at the start of the game"""
-    display_name = "Starting Bounty Difficulty"
-
-    option_super_easy = 0
-    option_easy = 1
-    option_manageable = 2
-    option_intermediate = 3
-    option_difficult = 4
-    option_very_hard = 5
-    option_nightmare = 6
-    option_diabolical = 7
-    option_impossible = 8
-
-    default = option_manageable'''
-
 class NumberOfStartingDifficulties(Range):
     """How many class of bounty difficulties are unlocked at the start of the game."""
     display_name = "Number of Starting Difficulties"
@@ -67,6 +52,58 @@ class NumberOfStartingDifficulties(Range):
     range_end = 8
     default = 4
 
+class MarkImportantShopLocationsAsPriority(Toggle):
+    """Flag the 5 clubs and the LMUGC ticket locations as priority locations so filler/trap items don't appear there"""
+    display_name = "Flag important shop locations as priority locations"
+
+class PuttingDrillBountiesRequirePutter(DefaultOnToggle):
+    """Whether the 'Putting Drill' and the 'Pressure Drill' bounties should require the putter in logic"""
+    display_name = "Require the putter for the 'Putting Drill' and 'Pressure Drill' bounties logic"
+
+class GreatExplorerAllowPutterInLogic(Toggle):
+    """Whether the 'Great Explorer' bounty should be considered in logic if the player's only club is a putter (Hole 2 fairway to Hole 5 MultiHit bounty). Easy but very tedious"""
+    display_name = "Allow putter in logic for 'Great Explorer' bounty"
+
+
+class GolfHoleChecks(DefaultOnToggle):
+    """Enables getting the ball into golf holes as locations"""
+    display_name = "Enable golf hole checks"
+
+class GolfHoleChecksEnableMiniIslands(Toggle):
+    """Enables the three mini islands golf holes. Does nothing if golf hole checks are disabled"""
+    display_name = "Enable the mini island golf hole checks"
+
+class GolfHoleChecksEnableSecretGreens(Toggle):
+    """Enables the two secret green golf holes. Does nothing if golf hole checks are disabled. Warning: these are very hard to get"""
+    display_name = "Enable the secret green golf hole checks"
+
+
+class BreakableChecks(DefaultOnToggle):
+    """Enable breaking destructible objects as locations"""
+    display_name = "Enable breakable objects as checks"
+
+class BreakableChecksEnableStatue(DefaultOnToggle):
+    """Adds each breakable statue piece in the holes 2-5 area as a location for breakable checks.
+    Does nothing if breakable checks re disabled"""
+    display_name = "Breakable statue pieces are checks"
+
+class BreakableStatuesFrontYardInLogic(Toggle):
+    """Some of the statue block pieces can be hit from the front yard with a Driver, enabling this option adds that possibility in logic.
+    Does nothing if breakable checks are disabled"""
+    display_name = "Logic considers breaking statue blocks from front yard"
+
+
+class AchievementChecks(DefaultOnToggle):
+    """Enable some achievements as checks"""
+    display_name = "Enable AchievementSanity"
+
+class AchievementChecksEnableHoleInOne(Toggle):
+    """Enable the hole-in-one achievement for achievement checks. Does nothing if achievement checks are disabled"""
+    display_name = "Enable the hole-in-one achievement checks"
+
+class AchievementChecksEnableHoleSixAlbatross(Toggle):
+    """Enable the hole 6 albatross achievement for achievement checks. Does nothing if achievement checks is disabled"""
+    display_name = "Enable the hole 6 albatross achievement check"
 
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
@@ -77,5 +114,56 @@ class APNormalGolfGameOptions(PerGameCommonOptions):
     starting_club: StartingClub
     starting_region: StartingRegion
     num_starting_difficulties: NumberOfStartingDifficulties
+    shop_locations_never_filler: MarkImportantShopLocationsAsPriority
+    putting_drills_req_putter: PuttingDrillBountiesRequirePutter
+    great_explorer_allow_putter_logic: GreatExplorerAllowPutterInLogic
+    hole_checks_enabled: GolfHoleChecks
+    hole_checks_enable_mini_island_holes: GolfHoleChecksEnableMiniIslands
+    hole_checks_enable_secret_greens: GolfHoleChecksEnableSecretGreens
+    breakable_checks_enabled: BreakableChecks
+    breakable_checks_statues_enabled: BreakableChecksEnableStatue
+    breakable_checks_statues_frontyard: BreakableStatuesFrontYardInLogic
+    achievement_checks_enabled: AchievementChecks
+    achievement_checks_hole_in_one_enabled: AchievementChecksEnableHoleInOne
+    achievement_checks_albatross_hole6_enabled: AchievementChecksEnableHoleSixAlbatross
 
 
+# Group logic/trick options together, especially for the local WebHost.
+normalgolfgame_options_groups = [
+    OptionGroup(
+        "Game Progression",
+        [
+            RequiredBountiesToWin,
+            StartingClub,
+            StartingRegion,
+            NumberOfStartingDifficulties,
+            PuttingDrillBountiesRequirePutter,
+            GreatExplorerAllowPutterInLogic,
+            MarkImportantShopLocationsAsPriority
+        ]
+    ),
+    OptionGroup(
+        "Golf Hole Options",
+        [
+            GolfHoleChecks,
+            GolfHoleChecksEnableMiniIslands,
+            GolfHoleChecksEnableSecretGreens
+        ]
+    ),
+    OptionGroup(
+        "Breakable Options",
+        [
+            BreakableChecks,
+            BreakableChecksEnableStatue,
+            BreakableStatuesFrontYardInLogic
+        ]
+    ),
+    OptionGroup(
+        "Achievement Options",
+        [
+            AchievementChecks,
+            AchievementChecksEnableHoleInOne,
+            AchievementChecksEnableHoleSixAlbatross
+        ]
+    ),
+]
