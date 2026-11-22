@@ -67,6 +67,7 @@ However, all of this is trivial to edit in game_data.py
 * Bounties don't get locked if they are impossible to complete with the player's currently unlocked clubs.   
 * Bounties are accessed by the sibling index in the !!!Bounties gameobject, this will certainly break if the game gets updated or if other mods mess with the bounty ordering.
 * Locked bounties still have arrows pointing at other bounties, this is purely visual and should not be actually locking the bounties
+* One of the breakable car park signs spams the BepInEx log with errors & low FPS briefly after breaking it
 * Starting region numbers in options.py are weird since I was using them for indexing purposes.  
 * The apworld py files are messy and unorganized.  
 * There is no web-world or help files for the apworld, so it fails those two tests
